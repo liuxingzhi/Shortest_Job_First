@@ -1,37 +1,3 @@
-executive assistant
-engineer
-executive chef
-engineering manager
-executive director
-engineering technician
-executive personal assistant
-enrollment counselor
-executive recruiter
-enterprise architect
-executive secretary
-facilities coordinator
-financial associate
-facilities manager
-financial reporting manager
-federal government worker
-firefighter
-field engineer
-flight attendant
-field investigator
-floral designer
-field representative
-food service worker
-field sales representative
-footwear associate
-field service engineer
-forklift operator
-field service representative
-fraud investigator
-field service technician
-freight team associate
-field technician
-front desk clerk
-file clerk
 front desk coordinator
 finance manager
 front desk receptionist

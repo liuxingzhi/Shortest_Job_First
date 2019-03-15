@@ -38,6 +38,6 @@ for a in alphas:
 
 print(job_list, len(job_list))
 
-with open(job_list_file, "w") as f:
+with open(job_list_file, "w+") as f:
     for job in job_list:
         f.write(job.lower() + "\n")

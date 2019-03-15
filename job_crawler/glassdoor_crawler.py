@@ -49,7 +49,9 @@ job_list = []
 
 def get_brower():
     chrome_options = Options()
-    chrome_options.add_argument('--headless')# 运行时关闭窗口
+    PROXY = "206.189.172.146:8080"  # IP:PORT or HOST:PORT
+    chrome_options.add_argument('--proxy-server=%s' % PROXY)
+    # chrome_options.add_argument('--headless')# 运行时关闭窗口
     # 使用同一目录下的chromedriver进行模拟
     browser_driver_address = str
     if platform.system() == "Windows":
@@ -71,14 +73,22 @@ def get_brower():
 def crawl_bunch_of_job(job_list: List[str], threadID: int):
     print(threadID)
     driver = get_brower()
+    driver.get(glassdoor_main_url)
     for job in job_list:
-        crawl_one_job_title(job, driver)
+        complete = False
+        while not complete:
+            try:
+                crawl_one_job_title(job, driver)
+                complete = True
+            except selenium.common.exceptions.WebDriverException as e:
+                complete = False
+                # sleep(1000)
     driver.quit()
 
 
 def crawl_one_job_title(job: str, driver: webdriver.Chrome):
     # go to the main page of glassdoor
-    driver.get(glassdoor_main_url)
+    # driver.get(glassdoor_main_url)
     driver.implicitly_wait(time_limit)
     keyword = driver.find_element_by_id("sc.keyword")
     keyword.clear()
@@ -127,7 +137,11 @@ def crawl_one_job_title(job: str, driver: webdriver.Chrome):
             except selenium.common.exceptions.StaleElementReferenceException as e:
                 continue
 
-            employer_wrapper_html = employer_wrapper_tag.get_attribute('innerHTML')
+            try:
+                employer_wrapper_html = employer_wrapper_tag.get_attribute('innerHTML')
+            except selenium.common.exceptions.StaleElementReferenceException as e:
+                continue
+
             employer_wrapper_soup = BeautifulSoup(employer_wrapper_html, "html.parser")
             company_name = employer_wrapper_soup.find('a', attrs={"class": "empDetailsLink"}).text
             print(company_name)
@@ -198,7 +212,7 @@ def crawl_one_job_title(job: str, driver: webdriver.Chrome):
             # if salary_tag:
             #     salary_tag.click()
             #     driver.implicitly_wait(1)
-            print(company_info)
+            # print(company_info)
         # 如果有下一页 我们就翻到下一页去
         try:
             next_page = driver.find_element_by_xpath("""//*[@id="FooterPageNav"]/div/ul/li[7]/a""")
@@ -219,7 +233,7 @@ if __name__ == '__main__':
             job_list.append(line)
             line = f.readline()
 
-    pool_size = 4
+    pool_size = 1
     pool = multiprocessing.Pool(pool_size)
     total_num_job_titles = len(job_list)
     one_thread_task = total_num_job_titles // 4
