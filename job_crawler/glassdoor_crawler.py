@@ -18,6 +18,11 @@ from queue import Queue
 import threading
 import multiprocessing
 from multiprocessing import Manager, Process
+from job_crawler.MySQLWrapper import MySQLWrapper
+import MySQLdb
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 glassdoor_main_url = "https://www.glassdoor.com/Job/jobs.htm?suggestCount=0&suggestChosen=false&clickSource=searchBtn&typedKeyword=software&sc.keyword=software&locT=&locId=&jobType="
 time_limit = 12
@@ -49,7 +54,7 @@ job_list = []
 
 def get_brower():
     chrome_options = Options()
-    chrome_options.add_argument('--headless')# 运行时关闭窗口
+    # chrome_options.add_argument('--headless')  # 运行时关闭窗口
     # 使用同一目录下的chromedriver进行模拟
     browser_driver_address = str
     if platform.system() == "Windows":
@@ -86,129 +91,180 @@ def crawl_one_job_title(job: str, driver: webdriver.Chrome):
     location = driver.find_element_by_id("sc.location")
     location.clear()
     driver.find_element_by_id("HeroSearchButton").click()
-
-    for i in range(20):
-        try:
-            job_ul = driver.find_element_by_xpath("""//*[@id="MainCol"]/div/ul""")
-        except selenium.common.exceptions.NoSuchElementException as e:
-            # 如果没找到，那这个job很可能出错了，咱们跳过它
-            break
-
-        li_list = job_ul.find_elements_by_tag_name("li")
-        for li in li_list:
-            # li.click() 有可能会失败，如果发生这种情况，是glassdoor网页崩了，应该重新跑这个任务
-            li.click()
-            driver.implicitly_wait(time_limit)
-
-            # 抓小广告，关了去
-            driver.implicitly_wait(0)  # 如果不设成0,会等time_limit时间的小广告
+    with MySQLWrapper() as conn:
+        for i in range(20):
             try:
-                ad_div = driver.find_element_by_xpath("""//div[@id="JAModal"]/div""")
+                job_ul = driver.find_element_by_xpath("""//*[@id="MainCol"]/div/ul""")
             except selenium.common.exceptions.NoSuchElementException as e:
-                ad_div = None
+                # 如果没找到，那这个job很可能出错了，咱们跳过它
+                break
 
-            if ad_div:
-                # 如果不是隐藏的广告，关闭之
-                ad_div_class = ad_div.get_attribute("class")
-                if not ad_div_class.__contains__("hidden"):
-                    ad_close_tab = driver.find_element_by_xpath("""//*[@id="JAModal"]/div/div[2]/div[1]""")
-                    ad_close_tab.click()
+            li_list = job_ul.find_elements_by_tag_name("li")
+            for li in li_list:
+                # li.click() 有可能会失败，如果发生这种情况，是glassdoor网页崩了，应该重新跑这个任务
+                li.click()
+                driver.implicitly_wait(time_limit)
 
-            driver.implicitly_wait(time_limit)
-            job_id = li.get_attribute("data-id")
-            employer_id = li.get_attribute("data-emp-id")
-            job_location = li.get_attribute("data-job-loc")
-            driver.implicitly_wait(time_limit)
-
-            # 如果不能获取公司名称，说明这个glassdoor网页有问题，这份工作跳过不管了
-            try:
-                employer_wrapper_tag = driver.find_element_by_xpath(
-                    """//*[@id="HeroHeaderModule"]/div[contains(@class, 'empWrapper')]""")
-            except selenium.common.exceptions.StaleElementReferenceException as e:
-                continue
-
-            employer_wrapper_html = employer_wrapper_tag.get_attribute('innerHTML')
-            employer_wrapper_soup = BeautifulSoup(employer_wrapper_html, "html.parser")
-            company_name = employer_wrapper_soup.find('a', attrs={"class": "empDetailsLink"}).text
-            print(company_name)
-            # company_name_tag = driver.find_element_by_xpath(
-            #     """//*[@id="HeroHeaderModule"]/div[3]/div[3]/a""")
-            # # """//*[@id="HeroHeaderModule"]/div[3]/div[3]/a[contains(@class, 'empDetailsLink')]"""
-            # company_name = company_name_tag.text
-
-            # get the posted date of a job, if the job have the attribute, 找这个元素不需要等
-            driver.implicitly_wait(0)
-            try:
-                # crawled post_time structure: n days ago
-                post_time_tag = li.find_element_by_xpath(""".//span[contains(@class, 'minor')]""")
-            except selenium.common.exceptions.NoSuchElementException as e:
-                post_time_tag = None
-
-            posted_time = None
-            if post_time_tag:
-                # days_ago = post_time_tag.text.split()[0]
-                # if days_ago == "Today":
-                #     days_ago = 1
-                # else:
-                #     days_ago = int(days_ago)
-                # posted_time = datetime.now() - timedelta(days=days_ago)
-                posted_time = post_time_tag.text
-
-            driver.implicitly_wait(time_limit)
-            job_description_container = driver.find_element_by_xpath("""//*[@id="JobDescriptionContainer"]""")
-            description_div = job_description_container.find_element_by_class_name("jobDescriptionContent")
-            job_description = description_div.text
-            job_description_html = description_div.get_attribute('innerHTML')
-
-            # crawl its company infomation
-            company_info = dict()
-            company_info["company_id"] = employer_id
-            company_info["company_name"] = company_name
-            company_website_url = None
-
-            driver.implicitly_wait(1)  # this should be quick
-            try:
-                company_tag = driver.find_element_by_xpath(
-                    """//*[@id="Details"]/div[2]/header//div[contains(@class, 'scrollableTabs')]//span[contains(text(), 'Company')]""")
-            except selenium.common.exceptions.NoSuchElementException as e:
-                company_tag = None
-
-            if company_tag:
-                company_tag.click()
-                basic_info_div = driver.find_element_by_xpath("""//*[@id="EmpBasicInfo"]""")
-                info_entities = basic_info_div.find_elements_by_xpath(
-                    """//div[contains(@class, 'infoEntity')]""")
-                for entity in info_entities:
-                    label = entity.find_element_by_tag_name("label")
-                    span = entity.find_element_by_tag_name("span")
-                    key = label.text
-                    value = span.text
-                    company_info[key] = value
+                # 抓小广告，关了去
+                driver.implicitly_wait(0)  # 如果不设成0,会等time_limit时间的小广告
                 try:
-                    company_website_tag = basic_info_div.find_element_by_xpath(".//a[contains(text(), 'Visit']")
+                    ad_div = driver.find_element_by_xpath("""//div[@id="JAModal"]/div""")
                 except selenium.common.exceptions.NoSuchElementException as e:
-                    company_website_tag = None
-                if company_website_tag:
-                    company_website_url = company_website_tag.get_attribute("href")
-                    company_info["website"] = company_website_url
-            # try:
-            #     salary_tag = driver.find_element_by_xpath("""//*[@id="Details"]/div[2]/header//div[contains(@class, 'scrollableTabs')]//span/[contains(text(), 'Salary')]""")
-            # except selenium.common.exceptions.NoSuchElementException as e:
-            #     salary_tag = None
-            # if salary_tag:
-            #     salary_tag.click()
-            #     driver.implicitly_wait(1)
-            print(company_info)
-        # 如果有下一页 我们就翻到下一页去
-        try:
-            next_page = driver.find_element_by_xpath("""//*[@id="FooterPageNav"]/div/ul/li[7]/a""")
-        except selenium.common.exceptions.NoSuchElementException as e:
-            next_page = None  # this mean we do not have next_page
-        if next_page:
-            next_page.click()
-            driver.implicitly_wait(time_limit)
-        else:
-            break
+                    ad_div = None
+
+                if ad_div:
+                    # 如果不是隐藏的广告，关闭之
+                    ad_div_class = ad_div.get_attribute("class")
+                    if not ad_div_class.__contains__("hidden"):
+                        ad_close_tab = driver.find_element_by_xpath("""//*[@id="JAModal"]/div/div[2]/div[1]""")
+                        ad_close_tab.click()
+
+                driver.implicitly_wait(time_limit)
+
+                job_id = li.get_attribute("data-id")
+                job_title = li.get_attribute("data-normalize-job-title")
+                employer_id = li.get_attribute("data-emp-id")
+                job_location = li.get_attribute("data-job-loc")
+                driver.implicitly_wait(time_limit)
+
+                # 如果不能获取公司名称，说明这个glassdoor网页有问题，这份工作跳过不管了
+                try:
+                    employer_wrapper_tag = driver.find_element_by_xpath(
+                        """//*[@id="HeroHeaderModule"]/div[contains(@class, 'empWrapper')]""")
+                except selenium.common.exceptions.StaleElementReferenceException as e:
+                    continue
+
+                try:
+                    employer_wrapper_html = employer_wrapper_tag.get_attribute('innerHTML')
+                except selenium.common.exceptions.StaleElementReferenceException as e:
+                    continue
+                employer_wrapper_soup = BeautifulSoup(employer_wrapper_html, "html.parser")
+                company_name = employer_wrapper_soup.find('a', attrs={"class": "empDetailsLink"}).text
+                print(company_name)
+                # company_name_tag = driver.find_element_by_xpath(
+                #     """//*[@id="HeroHeaderModule"]/div[3]/div[3]/a""")
+                # # """//*[@id="HeroHeaderModule"]/div[3]/div[3]/a[contains(@class, 'empDetailsLink')]"""
+                # company_name = company_name_tag.text
+
+                # get the posted date of a job, if the job have the attribute, 找这个元素不需要等
+                driver.implicitly_wait(0)
+                try:
+                    # crawled post_time structure: n days ago
+                    post_time_tag = li.find_element_by_xpath(""".//span[contains(@class, 'minor')]""")
+                except selenium.common.exceptions.NoSuchElementException as e:
+                    post_time_tag = None
+
+                posted_time = None
+                if post_time_tag:
+                    # days_ago = post_time_tag.text.split()[0]
+                    # if days_ago == "Today":
+                    #     days_ago = 1
+                    # else:
+                    #     days_ago = int(days_ago)
+                    # posted_time = datetime.now() - timedelta(days=days_ago)
+                    posted_time = post_time_tag.text
+
+                driver.implicitly_wait(time_limit)
+                # try:
+                #     job_tag = driver.find_element_by_xpath(
+                #         """//*[@id="Details"]/div[2]/header//div[contains(@class, 'scrollableTabs')]//span[contains(text(), 'Job')]""")
+                # except selenium.common.exceptions.NoSuchElementException as e:
+                #     continue
+                # else:
+                #     try:
+                #         job_tag.click()
+                #     except selenium.common.exceptions.StaleElementReferenceException as e:
+                #         continue
+                try:
+                    job_description_container = driver.find_element_by_xpath("""//*[@id="JobDescriptionContainer"]""")
+                    description_div = job_description_container.find_element_by_class_name("jobDescriptionContent")
+                    job_description = description_div.text
+                    job_description_html = description_div.get_attribute('innerHTML')
+                except Exception as e:
+                    logging.log(logging.INFO, "job_description没找到:" + e)
+                    continue
+                # job_soup = BeautifulSoup(job_description_html, "html.parser")
+                # job_description_html = job_soup.content
+
+                # 开始填充job_dict，准备插入到数据库
+                job_info_dict = {}
+                job_info_dict['job_id'] = job_id.strip()
+                job_info_dict['job_title'] = job_title.strip()
+                job_info_dict['company_id'] = employer_id.strip()
+                job_info_dict['location'] = job_location.strip()
+                job_info_dict['job_description'] = job_description
+                job_info_dict['job_description_html'] = job_description_html
+                job_info_dict['headhunter_id'] = None
+                if posted_time:
+                    job_info_dict['posted_time'] = posted_time.strip()
+
+                # crawl its company infomation
+                company_info_dict = dict()
+                company_info_dict["company_id"] = employer_id.strip()
+                company_info_dict["company_name"] = company_name.strip()
+                company_website_url = None
+
+                driver.implicitly_wait(1)  # this should be quick
+                try:
+                    company_tag = driver.find_element_by_xpath(
+                        """//*[@id="Details"]/div[2]/header//div[contains(@class, 'scrollableTabs')]//span[contains(text(), 'Company')]""")
+                except selenium.common.exceptions.NoSuchElementException as e:
+                    company_tag = None
+
+                if company_tag:
+                    company_tag.click()
+                    basic_info_div = driver.find_element_by_xpath("""//*[@id="EmpBasicInfo"]""")
+                    info_entities = basic_info_div.find_elements_by_xpath(
+                        """//div[contains(@class, 'infoEntity')]""")
+                    for entity in info_entities:
+                        label = entity.find_element_by_tag_name("label")
+                        span = entity.find_element_by_tag_name("span")
+                        key = label.text.strip()
+                        value = span.text.strip()
+                        company_info_dict[key] = value
+                    try:
+                        company_website_tag = basic_info_div.find_element_by_xpath(".//a[contains(text(), 'Visit']")
+                    except selenium.common.exceptions.NoSuchElementException as e:
+                        company_website_tag = None
+                    if company_website_tag:
+                        company_website_url = company_website_tag.get_attribute("href")
+                        company_info_dict["website"] = company_website_url.strip()
+
+                # try:
+                #     salary_tag = driver.find_element_by_xpath(
+                #         """//*[@id="Details"]/div[2]/header//div[contains(@class, 'scrollableTabs')]//span/[contains(text(), 'Salary')]""")
+                # except selenium.common.exceptions.NoSuchElementException as e:
+                #     salary_tag = None
+                # if salary_tag:
+                #     salary_tag.click()
+                #     driver.implicitly_wait(1)
+                # print(company_info)
+
+                # 將爬取到的company信息和job信息存入数据库
+                try:
+                    conn.insert_one_row_by_dict("company_data_unclean", company_info_dict)
+                except (MySQLdb._exceptions.OperationalError, MySQLdb.IntegrityError) as e:
+                    logging.log(logging.INFO, e)
+                # 将job信息插入数据库,错了就跳过这个job，不要了
+                try:
+                    conn.insert_one_row_by_dict("job_data_unclean", job_info_dict)
+                except (MySQLdb._exceptions.OperationalError, MySQLdb.IntegrityError) as e:
+                    logging.log(logging.INFO, e)
+                #     print("已经存在", job_info_dict)
+                #     continue
+                else:
+                    print("成功插入一条job", job_info_dict['job_id'], job_info_dict['job_title'])
+
+            # 如果有下一页 我们就翻到下一页去
+            try:
+                next_page = driver.find_element_by_xpath("""//*[@id="FooterPageNav"]/div/ul/li[7]/a""")
+            except selenium.common.exceptions.NoSuchElementException as e:
+                next_page = None  # this mean we do not have next_page
+            if next_page:
+                next_page.click()
+                driver.implicitly_wait(time_limit)
+            else:
+                break
 
 
 if __name__ == '__main__':
@@ -219,7 +275,7 @@ if __name__ == '__main__':
             job_list.append(line)
             line = f.readline()
 
-    pool_size = 4
+    pool_size = 1
     pool = multiprocessing.Pool(pool_size)
     total_num_job_titles = len(job_list)
     one_thread_task = total_num_job_titles // 4

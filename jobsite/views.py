@@ -10,6 +10,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 
 # Create your views here.
 
+@require_http_methods(["GET"])
 def homeproc(request):
     response = HttpResponse()
     response.write("<h1>This is homepage,more functions are <a href='./msggate'>here</a></h1>")
