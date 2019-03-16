@@ -212,7 +212,11 @@ def crawl_one_job_title(job: str, driver: webdriver.Chrome):
                     company_tag = None
 
                 if company_tag:
-                    company_tag.click()
+                    try:
+                        company_tag.click()
+                    except Exception as e:
+                        logging.log(logging.INFO, "company标签不让点," + e)
+                        continue
                     basic_info_div = driver.find_element_by_xpath("""//*[@id="EmpBasicInfo"]""")
                     info_entities = basic_info_div.find_elements_by_xpath(
                         """//div[contains(@class, 'infoEntity')]""")
