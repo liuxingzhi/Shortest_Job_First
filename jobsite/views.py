@@ -9,11 +9,30 @@ from django.core.serializers.json import DjangoJSONEncoder
 
 
 # Create your views here.
-
 @require_http_methods(["GET"])
 def homeproc(request):
-    response = HttpResponse()
-    response.write("<h1>This is homepage,more functions are <a href='./msggate'>here</a></h1>")
-    response.write("<h2>this is a small title</h2>")
-    response.write("<h3>Hello world</h3>")
-    return response
+    return render(request, "index.html")
+
+
+def career(request):
+    return render(request, "career.html")
+
+
+def tips(request):
+    return render(request, "tips.html")
+
+
+def gpa(request):
+    return render(request, "gpa.html")
+
+
+def resume(request):
+    return render(request, "resume.html")
+
+
+def programming(request):
+    return render(request, "programming.html")
+
+
+def top(request):
+    return render(request, "top.html")
