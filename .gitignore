@@ -5,6 +5,10 @@
 /.idea
 
 # do not include any python complile file
-*/__pycache__
+__pycache__/
 
+# do not include any migrations in the future
+*/migrations
 
+# do not need and pyc temp file
+*.pyc
