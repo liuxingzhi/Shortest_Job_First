@@ -1,3 +1,176 @@
+account executive
+application developer
+account manager
+architect
+account representative
+art director
+accountant
+assembler
+accounting assistant
+assistant
+accounting clerk
+assistant controller
+accounting manager
+assistant editor
+accounts payable clerk
+assistant manager
+accounts payable specialist
+assistant project manager
+accounts receivable clerk
+assistant property manager
+administrative assistant
+assistant store manager
+administrative coordinator
+assistant teacher
+administrative specialist
+attorney
+analyst
+autocad drafter
+analytical chemist
+automotive technician
+baker
+broadband technician
+bank teller
+budget analyst
+banker
+bus driver
+banquet manager
+business analyst
+bartender
+business developer
+benefits administrator
+business development associate
+benefits manager
+business development manager
+benefits specialist
+business development specialist
+billing clerk
+business manager
+billing specialist
+business objects developer
+bookkeeper
+business office manager
+branch customer service representative
+business process analyst
+branch manager
+business systems analyst
+branch office administrator
+buyer
+brand manager
+buyer planner
+carpenter
+construction manager
+case manager
+construction superintendent
+cashier
+construction worker
+certified nursing assistant
+contract specialist
+chemist
+controller
+chief financial officer
+cook
+civil engineer
+copywriter
+clerk
+counselor
+clinical pharmacist
+credit analyst
+cna
+criminal investigator
+cnc machinist
+custodian
+commercial sales manager
+customer service advisor
+communications specialist
+customer service associate
+community volunteer
+customer service manager
+computer scientist
+customer service representative
+data analyst
+director of communication
+data entry clerk
+director of development
+data entry operator
+director of finance
+database administrator
+director of human resources
+delivery driver
+director of marketing
+dental assistant
+director of nursing
+dental hygienist
+director of operations
+design engineer
+director of sales
+designer
+dishwasher
+desktop support
+dispatcher
+desktop support technician
+district manager
+development associate
+district sales manager
+diesel mechanic
+drafter
+director
+driver
+director of business development
+driver merchandiser
+editor
+environmental engineer
+editorial assistant
+environmental scientist
+electrical designer
+equipment operator
+electrical engineer
+escrow assistant
+electrician
+esthetician
+electronic assembler
+estimator
+electronics engineer
+event manager
+electronics technician
+event planner
+embedded software engineer
+executive administrative assistant
+emergency road service counselor
+executive assistant
+engineer
+executive chef
+engineering manager
+executive director
+engineering technician
+executive personal assistant
+enrollment counselor
+executive recruiter
+enterprise architect
+executive secretary
+facilities coordinator
+financial associate
+facilities manager
+financial reporting manager
+federal government worker
+firefighter
+field engineer
+flight attendant
+field investigator
+floral designer
+field representative
+food service worker
+field sales representative
+footwear associate
+field service engineer
+forklift operator
+field service representative
+fraud investigator
+field service technician
+freight team associate
+field technician
+front desk clerk
+file clerk
 front desk coordinator
 finance manager
 front desk receptionist
