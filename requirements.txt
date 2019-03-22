@@ -17,3 +17,4 @@ tabulate==0.8.2
 beautifulsoup4==4.6.3
 peewee==3.8.0
 lxml
+mysqlclient
