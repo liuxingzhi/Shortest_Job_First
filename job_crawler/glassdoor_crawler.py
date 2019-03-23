@@ -282,7 +282,7 @@ def crawl_one_job_title(job: str, driver: webdriver.Chrome):
                             print("成功插入一条job", job_info_dict['job_id'], job_info_dict['job_title'])
 
                     except Exception as e:
-                        print("该工作有问题，跳到下一个")
+                        print("该工作有问题，跳到下一个" + str(e))
 
                 # 如果有下一页 我们就翻到下一页去
                 try:
@@ -298,7 +298,7 @@ def crawl_one_job_title(job: str, driver: webdriver.Chrome):
                 else:
                     break
             except Exception as e:
-                print("这页有问题,去下一页了")
+                print("这页有问题,去下一页了" + str(e))
 
 
 if __name__ == '__main__':
