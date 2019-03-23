@@ -3,6 +3,7 @@ from threading import Thread, Lock, Condition, Event
 from typing import List, Dict, Tuple, Sequence
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.remote.webelement import WebElement
 import os
 import time
 from bs4 import BeautifulSoup
@@ -95,7 +96,7 @@ def crawl_one_job_title(job: str, driver: webdriver.Chrome):
     location.clear()
     driver.find_element_by_id("HeroSearchButton").click()
     with MySQLWrapper() as conn:
-        pages_to_crawl = 10
+        pages_to_crawl = 5
         for i in range(pages_to_crawl):
             try:
                 try:
@@ -134,6 +135,13 @@ def crawl_one_job_title(job: str, driver: webdriver.Chrome):
                         job_title = li.get_attribute("data-normalize-job-title")
                         employer_id = li.get_attribute("data-emp-id")
                         job_location = li.get_attribute("data-job-loc")
+                        try:
+                            company_logo = li.find_element_by_tag_name("img")
+                            company_logo_url = company_logo.get_attribute("data-original-2x")
+                        except Exception as e:
+                            logging.log(logging.INFO, "没有找到company logo，跳过吧" + str(e))
+                            continue
+
                         driver.implicitly_wait(time_limit)
 
                         # 如果不能获取公司名称，说明这个glassdoor网页有问题，这份工作跳过不管了
@@ -149,11 +157,6 @@ def crawl_one_job_title(job: str, driver: webdriver.Chrome):
                             continue
                         employer_wrapper_soup = BeautifulSoup(employer_wrapper_html, "html.parser")
                         company_name = employer_wrapper_soup.find('a', attrs={"class": "empDetailsLink"}).text
-                        # print(company_name)
-                        # company_name_tag = driver.find_element_by_xpath(
-                        #     """//*[@id="HeroHeaderModule"]/div[3]/div[3]/a""")
-                        # # """//*[@id="HeroHeaderModule"]/div[3]/div[3]/a[contains(@class, 'empDetailsLink')]"""
-                        # company_name = company_name_tag.text
 
                         # get the posted date of a job, if the job have the attribute, 找这个元素不需要等
                         driver.implicitly_wait(0)
@@ -213,6 +216,7 @@ def crawl_one_job_title(job: str, driver: webdriver.Chrome):
                         company_info_dict = dict()
                         company_info_dict["company_id"] = employer_id.strip()
                         company_info_dict["company_name"] = company_name.strip()
+                        company_info_dict["logo_url"] = company_logo_url
                         company_website_url = None
 
                         driver.implicitly_wait(1)  # this should be quick
@@ -276,6 +280,7 @@ def crawl_one_job_title(job: str, driver: webdriver.Chrome):
                         #     continue
                         else:
                             print("成功插入一条job", job_info_dict['job_id'], job_info_dict['job_title'])
+
                     except Exception as e:
                         print("该工作有问题，跳到下一个")
 
@@ -305,7 +310,7 @@ if __name__ == '__main__':
             line = f.readline()
 
     # 指定从某一个offset开始爬取
-    job_list_offset = 4
+    job_list_offset = 0
     job_list = job_list[job_list_offset:]
 
     pool_size = 1

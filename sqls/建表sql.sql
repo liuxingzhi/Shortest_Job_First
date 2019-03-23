@@ -51,6 +51,8 @@ CREATE TABLE company
   type         VARCHAR(100),
   sector       varchar(100),
   competitors  varchar(500),
+  logo_path    varchar(300),
+  logo_url     varchar(300),
   PRIMARY KEY (company_id)
 );
 
@@ -67,6 +69,8 @@ CREATE TABLE company_data_unclean
   type         VARCHAR(100),
   sector       varchar(100),
   competitors  varchar(500),
+  logo_path    varchar(300),
+  logo_url     varchar(300),
   PRIMARY KEY (company_id)
 );
 
