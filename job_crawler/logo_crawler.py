@@ -55,10 +55,10 @@ def save_imgs_task() -> None:
             if url_task is None:
                 break
             company_id, url = url_task
-            store_path = os.path.join(saved_dir, company_id + ".png")
+            stored_path = os.path.join(saved_dir, company_id + ".png")
             # print("saving image")
             # get_picture_content(url)
-            with open(store_path, 'wb') as f:
+            with open(stored_path, 'wb') as f:
                 try:
                     f.write(get_picture_content(url))
                 except Exception as e:
@@ -68,7 +68,15 @@ def save_imgs_task() -> None:
                                 set c.downloaded = true
                                 where c.company_id = {company_id}
                             """
+
                     db.execute(sql)
+                    logo_path = os.path.join("company", company_id + ".png")
+                    sql = f"""update company_data_unclean as c
+                            set c.logo_path = '{logo_path}'
+                            where c.company_id = {company_id}
+                            """
+                    db.execute(sql)
+                    db.commit()
                     print(f"downloaded {company_id} logo")
 
 
@@ -121,6 +129,7 @@ def init():
         db.execute(sql1)
         try:
             db.execute(sql2)
+            db.commit()
         except IntegrityError as e:
             pass
 
