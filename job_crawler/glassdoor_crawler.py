@@ -81,7 +81,10 @@ def crawl_bunch_of_job(job_list: List[str], threadID: int):
     for job in job_list:
         with open("job_crawled.txt", "a+") as f:
             f.write(job + "\n")
-        crawl_one_job_title(job, driver)
+        try:
+            crawl_one_job_title(job, driver)
+        except Exception as e:
+            logging.log(logging.INFO, f"出错了，跳过当前job{job}:" + str(e))
     driver.quit()
 
 
@@ -310,7 +313,7 @@ if __name__ == '__main__':
             line = f.readline()
 
     # 指定从某一个offset开始爬取
-    job_list_offset = 0
+    job_list_offset = 16
     job_list = job_list[job_list_offset:]
 
     pool_size = 1

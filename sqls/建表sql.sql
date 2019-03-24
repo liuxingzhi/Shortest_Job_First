@@ -1,5 +1,5 @@
 -- User (user_id, password, email, username);   (FD: email-->user_id)
-CREATE TABLE user
+CREATE TABLE IF NOT EXISTS user
 (
   user_id   INT          NOT NULL AUTO_INCREMENT,
   password  VARCHAR(100) NOT NULL,
@@ -13,7 +13,7 @@ CREATE TABLE user
 );
 
 -- JobSeeker (User.user_id, major, GPA, university, graduation_date, salary_expectation);
-CREATE TABLE jobseeker
+CREATE TABLE IF NOT EXISTS jobseeker
 (
   user_id            INT          NOT NULL,
   major              VARCHAR(100) NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE jobseeker
 );
 
 -- Headhunter (User.user_id, synopsis, occupation_direction);
-CREATE TABLE headhunter
+CREATE TABLE IF NOT EXISTS headhunter
 (
   user_id              INT          NOT NULL,
   synopsis             VARCHAR(500) NOT NULL,
@@ -38,7 +38,7 @@ CREATE TABLE headhunter
 );
 
 -- Company (company_name, industry, scale, sales, country, website);   (FD: website-->company_name)
-CREATE TABLE company
+CREATE TABLE IF NOT EXISTS company
 (
   company_id   VARCHAR(100),
   company_name VARCHAR(100),
@@ -56,7 +56,7 @@ CREATE TABLE company
   PRIMARY KEY (company_id)
 );
 
-CREATE TABLE company_data_unclean
+CREATE TABLE IF NOT EXISTS company_data_unclean
 (
   company_id   VARCHAR(100),
   company_name VARCHAR(100),
@@ -75,7 +75,7 @@ CREATE TABLE company_data_unclean
 );
 
 -- Job (job_id, Company.company_name, job_title, location, salary, job_description, Headhunter.user_id);
-CREATE TABLE job
+CREATE TABLE IF NOT EXISTS job
 (
   job_id               VARCHAR(100),
   company_id           VARCHAR(100),
@@ -97,7 +97,7 @@ CREATE TABLE job
     ON UPDATE CASCADE
 );
 
-CREATE TABLE job_data_unclean
+CREATE TABLE IF NOT EXISTS job_data_unclean
 (
   job_id               VARCHAR(100),
   company_id           VARCHAR(100),
@@ -120,7 +120,7 @@ CREATE TABLE job_data_unclean
 );
 
 -- Favorite(JobSeeker.user_id, Job.job_id)
-CREATE TABLE favorite
+CREATE TABLE IF NOT EXISTS favorite
 (
   job_id  VARCHAR(100) NOT NULL,
   user_id INT          NOT NULL,
@@ -134,7 +134,7 @@ CREATE TABLE favorite
     ON UPDATE CASCADE
 );
 
-CREATE TABLE jobseeker_tags
+CREATE TABLE IF NOT EXISTS jobseeker_tags
 (
   user_id INT          NOT NULL,
   tag     varchar(100) NOT NULL,
@@ -144,7 +144,7 @@ CREATE TABLE jobseeker_tags
     ON UPDATE CASCADE
 );
 
-CREATE TABLE job_tags
+CREATE TABLE IF NOT EXISTS job_tags
 (
   job_id VARCHAR(100) NOT NULL,
   tag    varchar(100) NOT NULL,
@@ -154,3 +154,9 @@ CREATE TABLE job_tags
     ON UPDATE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS company_logo_downloaded
+(
+  company_id VARCHAR(100) NOT NULL,
+  downloaded  BOOL DEFAULT FALSE,
+  PRIMARY KEY (company_id)
+)

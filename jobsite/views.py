@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from django.shortcuts import render
 from datetime import datetime
 from django.http.response import HttpResponse, JsonResponse, FileResponse, Http404
 from django.views.decorators.http import require_http_methods
@@ -8,6 +7,7 @@ from django.core.serializers import serialize
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import connection
 import django
+
 
 # Create your views here.
 @require_http_methods(["GET"])
@@ -44,6 +44,7 @@ def job_search(request, keyword):
     location = str
     company_name = str
     industry = str
+    maximum_job_return = 100
     with connection.cursor() as cursor:
         sql = f'''select * from job as j
         inner join company as c
@@ -52,9 +53,11 @@ def job_search(request, keyword):
         and j.location like BINARY "%{location}%"
         and c.company_name like "%{company_name}%"
         and c.industry like "%{industry}%" 
-        order by j.job_id, j.location, c.industry, c.company_id asc'''
+        order by j.job_id, j.location, c.industry, c.company_id asc
+        limit {maximum_job_return}'''
         cursor.execute(sql)
         result = cursor.fetchall()
+    return render(request, "jobsite/career.html", result)
 
 
 def job_info(request, job_id):
@@ -63,3 +66,12 @@ def job_info(request, job_id):
 
 def company_info(request, company_id):
     pass
+
+
+def add_favorite_job(request, job_id):
+    pass
+
+
+def show_favorite_job(request, user_id):
+    pass
+
