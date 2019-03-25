@@ -78,7 +78,7 @@ class CompanyDataUnclean(models.Model):
 
 class Job(models.Model):
     job_id = models.CharField(primary_key=True, max_length=100)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, blank=True, null=True)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, blank=False, null=False)
     salary = models.CharField(max_length=100, blank=True, null=True)
     job_title = models.CharField(max_length=100, blank=True, null=True)
     location = models.CharField(max_length=100, blank=True, null=True)

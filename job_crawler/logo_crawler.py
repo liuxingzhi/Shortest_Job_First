@@ -20,6 +20,19 @@ imgs_task_queue = Queue()
 saved_dir = os.path.join("..", "media", "company_logos")
 
 
+def timeit(func):
+    """一个计时器"""
+
+    def wrapper(*args, **kwargs):
+        start = time.clock()
+        response = func(*args, **kwargs)
+        end = time.clock()
+        print('time spend:', end - start)
+        return response
+
+    return wrapper
+
+
 def getHTMLText(url: str, encode=None) -> str:
     try:
         r = requests.get(url, headers=headers, timeout=10)
