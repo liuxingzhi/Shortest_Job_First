@@ -55,7 +55,9 @@ ROOT_URLCONF = 'Shortest_job_first.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')]
+        'DIRS': [os.path.join(BASE_DIR, 'users', 'templates'),
+                 os.path.join(BASE_DIR, 'jobsite', 'templates'),
+                 os.path.join(BASE_DIR, 'jobs', 'templates'),]
         ,
         'APP_DIRS': True,
         'OPTIONS': {
