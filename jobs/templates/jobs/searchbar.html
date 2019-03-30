@@ -1,0 +1,22 @@
+{% extends "users/loginbase.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <div class="content-section">
+        <form method="POST" action="/search/">
+            {% csrf_token %}
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">Enter keyword</legend>
+                {{ form|crispy }}
+            </fieldset>
+            <input type="text" name="textfield">
+            <div class="form-group">
+                <button class="btn btn-outline-info" type="submit">Search</button>
+            </div>
+            <ul>
+                {% for element in results %}
+                    <li>{{ element }}</li>
+                {% endfor %}
+            </ul>
+        </form>
+    </div>
+{% endblock content %}
