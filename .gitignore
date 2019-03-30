@@ -1,10 +1,11 @@
 # do not include any python package
-/venv
+venv
 
 # do not include any idea config file
-/.idea
+.idea
 
 # do not include any python complile file
-*/__pycache__
+__pycache__/
 
-
+# do not include any migrations in the future
+migrations

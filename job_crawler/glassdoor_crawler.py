@@ -3,6 +3,7 @@ from threading import Thread, Lock, Condition, Event
 from typing import List, Dict, Tuple, Sequence
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.remote.webelement import WebElement
 import os
 import time
 from bs4 import BeautifulSoup
@@ -23,37 +24,35 @@ import MySQLdb
 from MySQLdb import OperationalError, IntegrityError
 import logging
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, filename="glassdoor_crawling.log", filemode='w')
 
 glassdoor_main_url = "https://www.glassdoor.com/Job/jobs.htm?suggestCount=0&suggestChosen=false&clickSource=searchBtn&typedKeyword=software&sc.keyword=software&locT=&locId=&jobType="
-time_limit = 12
+time_limit = 10
 job_list_file = "job_list.txt"
 job_list = []
 
 
-# def sign_in():
-#     my_email = "abelliu@gmail.com"
-#     password = "cs4112019"
-#     driver.get(glassdoor_main_url)
-#     driver.implicitly_wait(time_limit)
-#     """
-#     WebDriverWait wait = new WebDriverWait(driver,30);
-#     wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id='campaignListTable']")));   /*examining the xpath for a search
-#     box*/
-#     driver.findElement(By.xpath("//*[@id='campaignListTable']")).sendKeys("TEXT");   /*enter text in search
-#     box*/
-#     """
-#     sign_in_button = driver.find_element_by_xpath("""//*[@id="TopNav"]//*[contains(text(), 'Sign In')]""")
-#     sign_in_button.click()
-#
-#     driver.implicitly_wait(time_limit)
-#     username_tag = driver.find_element_by_id("userEmail")
-#     username_tag.send_keys(my_email)
-#     password_tag = driver.find_element_by_id("userPassword")
-#     password_tag.send_keys(password)
-#     driver.find_element_by_xpath("""//*[@id="LoginModal"]/div/div/div[2]/div/button//*[contains(text(), 'Sign In')]""")
+def update_crawled_job_categories(job_category: str) -> None:
+    with MySQLWrapper() as db:
+        sql = f"""update job_categories as j
+                set j.crawled = true
+                where j.category= {job_category}
+            """
+        db.execute(sql)
+        db.commit()
 
-def get_brower():
+
+def fetch_uncrawled_job_categories() -> List[str]:
+    with MySQLWrapper() as db:
+        sql = f"""select j.category from job_categories as j
+                  where j.crawled = FALSE
+                  order by j.category ASC"""
+        job_list_in_tuple: Tuple[str] = db.query_all(sql)
+        job_category_list = [job_tuple[0] for job_tuple in job_list_in_tuple]
+        return job_category_list
+
+
+def get_brower() -> selenium.webdriver:
     chrome_options = Options()
     # chrome_options.add_argument('--headless')  # 运行时关闭窗口
     # 使用同一目录下的chromedriver进行模拟
@@ -74,17 +73,23 @@ def get_brower():
     return driver
 
 
-def crawl_bunch_of_job(job_list: List[str], threadID: int):
+def crawl_bunch_of_job(category_list: List[str], threadID: int) -> None:
     print(threadID)
     driver = get_brower()
-    for job in job_list:
+    for one_job_category in category_list:
         with open("job_crawled.txt", "a+") as f:
-            f.write(job + "\n")
-        crawl_one_job_title(job, driver)
+            f.write(one_job_category + "\n")
+
+        try:
+            crawl_one_job_title(one_job_category, driver)
+        except Exception as e:
+            logging.log(logging.INFO, f"出错了，跳过当前job{one_job_category}:" + str(e))
+        finally:
+            update_crawled_job_categories(one_job_category)
     driver.quit()
 
 
-def crawl_one_job_title(job: str, driver: webdriver.Chrome):
+def crawl_one_job_title(job: str, driver: webdriver.Chrome) -> None:
     # go to the main page of glassdoor
     driver.get(glassdoor_main_url)
     driver.implicitly_wait(time_limit)
@@ -95,7 +100,7 @@ def crawl_one_job_title(job: str, driver: webdriver.Chrome):
     location.clear()
     driver.find_element_by_id("HeroSearchButton").click()
     with MySQLWrapper() as conn:
-        pages_to_crawl = 10
+        pages_to_crawl = 5
         for i in range(pages_to_crawl):
             try:
                 try:
@@ -112,7 +117,6 @@ def crawl_one_job_title(job: str, driver: webdriver.Chrome):
                     try:
                         # li.click() 有可能会失败，如果发生这种情况，是glassdoor网页崩了，应该重新跑这个任务
                         li.click()
-                        driver.implicitly_wait(time_limit)
 
                         # 抓小广告，关了去
                         driver.implicitly_wait(0)  # 如果不设成0,会等time_limit时间的小广告
@@ -128,13 +132,18 @@ def crawl_one_job_title(job: str, driver: webdriver.Chrome):
                                 ad_close_tab = driver.find_element_by_xpath("""//*[@id="JAModal"]/div/div[2]/div[1]""")
                                 ad_close_tab.click()
 
-                        driver.implicitly_wait(time_limit)
-
                         job_id = li.get_attribute("data-id")
                         job_title = li.get_attribute("data-normalize-job-title")
                         employer_id = li.get_attribute("data-emp-id")
                         job_location = li.get_attribute("data-job-loc")
-                        driver.implicitly_wait(time_limit)
+                        try:
+                            company_logo = li.find_element_by_tag_name("img")
+                            company_logo_url = company_logo.get_attribute("data-original-2x")
+                        except Exception as e:
+                            logging.log(logging.INFO, "没有找到company logo，跳过吧" + str(e))
+                            continue
+
+                        driver.implicitly_wait(0.5)
 
                         # 如果不能获取公司名称，说明这个glassdoor网页有问题，这份工作跳过不管了
                         try:
@@ -149,11 +158,6 @@ def crawl_one_job_title(job: str, driver: webdriver.Chrome):
                             continue
                         employer_wrapper_soup = BeautifulSoup(employer_wrapper_html, "html.parser")
                         company_name = employer_wrapper_soup.find('a', attrs={"class": "empDetailsLink"}).text
-                        # print(company_name)
-                        # company_name_tag = driver.find_element_by_xpath(
-                        #     """//*[@id="HeroHeaderModule"]/div[3]/div[3]/a""")
-                        # # """//*[@id="HeroHeaderModule"]/div[3]/div[3]/a[contains(@class, 'empDetailsLink')]"""
-                        # company_name = company_name_tag.text
 
                         # get the posted date of a job, if the job have the attribute, 找这个元素不需要等
                         driver.implicitly_wait(0)
@@ -173,7 +177,7 @@ def crawl_one_job_title(job: str, driver: webdriver.Chrome):
                             # posted_time = datetime.now() - timedelta(days=days_ago)
                             posted_time = post_time_tag.text
 
-                        driver.implicitly_wait(time_limit)
+                        driver.implicitly_wait(0.5)
                         # try:
                         #     job_tag = driver.find_element_by_xpath(
                         #         """//*[@id="Details"]/div[2]/header//div[contains(@class, 'scrollableTabs')]//span[contains(text(), 'Job')]""")
@@ -213,9 +217,10 @@ def crawl_one_job_title(job: str, driver: webdriver.Chrome):
                         company_info_dict = dict()
                         company_info_dict["company_id"] = employer_id.strip()
                         company_info_dict["company_name"] = company_name.strip()
+                        company_info_dict["logo_url"] = company_logo_url
                         company_website_url = None
 
-                        driver.implicitly_wait(1)  # this should be quick
+                        driver.implicitly_wait(0.5)  # this should be quick
                         try:
                             company_tag = driver.find_element_by_xpath(
                                 """//*[@id="Details"]/div[2]/header//div[contains(@class, 'scrollableTabs')]//span[contains(text(), 'Company')]""")
@@ -276,14 +281,18 @@ def crawl_one_job_title(job: str, driver: webdriver.Chrome):
                         #     continue
                         else:
                             print("成功插入一条job", job_info_dict['job_id'], job_info_dict['job_title'])
+
                     except Exception as e:
-                        print("该工作有问题，跳到下一个")
+                        print("该工作有问题，跳到下一个" + str(e))
 
                 # 如果有下一页 我们就翻到下一页去
                 try:
                     next_page = driver.find_element_by_xpath("""//*[@id="FooterPageNav"]/div/ul/li[7]/a""")
                 except Exception as e:
                     next_page = None  # this mean we do not have next_page
+                    logging.log(logging.INFO, f"{job},没有下一页了")
+                    return
+
                 if next_page:
                     try:
                         next_page.click()
@@ -293,25 +302,27 @@ def crawl_one_job_title(job: str, driver: webdriver.Chrome):
                 else:
                     break
             except Exception as e:
-                print("这页有问题,去下一页了")
+                print("这页有问题,去下一页了" + str(e))
 
 
 if __name__ == '__main__':
-    with open(job_list_file, "r") as f:
-        lines = f.readlines()
-        lines = [x.strip() for x in lines]
-        for line in lines:
-            job_list.append(line)
-            line = f.readline()
+    # with open(job_list_file, "r") as f:
+    #     lines = f.readlines()
+    #     lines = [x.strip() for x in lines]
+    #     for line in lines:
+    #         job_list.append(line)
+    #         line = f.readline()
 
     # 指定从某一个offset开始爬取
-    job_list_offset = 4
-    job_list = job_list[job_list_offset:]
+    # job_list_offset = 728
+    # job_list = job_list[job_list_offset:]
+
+    job_list = fetch_uncrawled_job_categories()
 
     pool_size = 1
     pool = multiprocessing.Pool(pool_size)
     total_num_job_titles = len(job_list)
-    one_thread_task = total_num_job_titles // 4
+    one_thread_task = total_num_job_titles // pool_size
 
     job_divisions = []
     for i in range(pool_size):

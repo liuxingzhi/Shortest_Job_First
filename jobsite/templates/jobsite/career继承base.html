@@ -1,0 +1,214 @@
+{% extends "jobsite/jobsite_base.html" %}
+{% load static %}
+
+{% block title %}career{% endblock %}
+
+{% block customer_style_links %}
+    <!-- Custom fonts for this template -->
+    <link href="{% static 'Career/vendor/fontawesome-free/css/all.css' %}" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Kaushan+Script' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic,700italic' rel='stylesheet'
+          type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Roboto+Slab:400,100,300,700' rel='stylesheet' type='text/css'>
+
+    <!-- Custom styles for this template -->
+    <link href="{% static 'Career/css/agency.css' %}" rel="stylesheet">
+{% endblock %}
+{% block in_page_additional_css %}
+    <style>
+        form div {
+            background: rgba(0, 0, 0, 0);
+            padding: 40px;
+        }
+
+        form input {
+            height: 50px;
+            padding: 10px;
+            border: none;
+            border-radius: 25px;
+            outline: none;
+            width: 210px;
+
+        }
+
+        form button {
+            height: 50px;
+            width: 150px;
+            background: #ffeb3b;
+            border: none;
+            color: #000;
+            border-radius: 25px;
+            font-weight: bold;
+            margin-top: 30px !important;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            background-image: url("https://source.unsplash.com/IgA-z5dRIoo") !important;
+            background-repeat: no-repeat;
+            background-attachment: scroll;
+            background-position: center center;
+            background-size: cover;
+        }
+
+        header div div div {
+            color: white;
+        }
+    </style>
+{% endblock %}
+
+{% block customer_body_content %}
+    <header class="masthead">
+        <div class="container">
+            <div class="intro-text">
+                <div class="intro-lead-in"><strong>Your future starts here!</strong></div>
+                <a class="btn btn-primary btn-xl text-uppercase js-scroll-trigger" href="#portfolio">Let's Begin</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="bg-light" id="portfolio">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <h2 class="section-heading text-uppercase">Explore Companies</h2>
+                    <hr class="star-dark mb-5">
+
+                    <form action="{% url "job_search" %}" method="post">
+                        {% csrf_token %}
+                        <div class="form-boxx">
+                            <input type="text" class="search-filed" placeholder="job title" name="job_title">
+                            <input type="text" class="search-filed" placeholder="company name" name="company_name">
+                            <input type="text" class="search-filed" placeholder="industry" name="industry">
+                            <input type="text" class="search-field" placeholder="location" name="location">
+                            <button class="search-btnn" type="submit"> Search</button>
+                        </div>
+                    </form>
+                    <h3 class="section-subheading text-muted"></h3>
+                </div>
+
+
+            </div>
+            <div class="row">
+                <div class="col-md-4 col-sm-6 portfolio-item">
+                    <a class="portfolio-link" data-toggle="modal" href="#portfolioModal1">
+                        <div class="portfolio-hover">
+                            <div class="portfolio-hover-content">
+                                <i class="fas fa-plus fa-3x"></i>
+                            </div>
+                        </div>
+                        <img class="img-fluid" src="{% static 'Career/img/portfolio/01-thumbnail.jpg' %}" alt="">
+                        <div class="portfolio-caption">
+                            <style>
+                                h4 {
+                                    color: grey;
+                                }
+                            </style>
+                            <h4>Job Title</h4>
+                            <p class="text-muted">Company Name</p>
+                            <p class="text-muted">Location</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- About -->
+
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <span class="copyright">Copyright &copy; iJobs 2019</span>
+                </div>
+                <div class="col-md-4">
+                    <ul class="list-inline social-buttons">
+                        <li class="list-inline-item">
+                            <a href="https://twitter.com/">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="https://www.facebook.com/">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="https://www.linkedin.com/">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Portfolio Modals -->
+
+    <!-- Modal 1 -->
+    <div class="portfolio-modal modal fade" id="portfolioModal1" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="close-modal" data-dismiss="modal">
+                    <div class="lr">
+                        <div class="rl"></div>
+                    </div>
+                </div>
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-8 mx-auto">
+                            <div class="modal-body">
+                                <style>
+                                    img {
+                                        width: 350px !important;
+                                        height: 350px !important;
+
+                                    }
+                                </style>
+                                <img class="img-fluid d-block mx-auto" class="center"
+                                     src="{% static 'Career/img/portfolio/06-full.jpg' %}" alt="">
+                                <style>
+                                    h2 {
+                                        font-size: 25pt !important;
+                                    }
+                                </style>
+                                <h2 class="text-uppercase">Job Title</h2>
+                                <p class="item-intro text-muted"></p>
+                                <ul class="list-inline">
+                                    <li>Company Name:</li>
+                                    <li>Location:</li>
+                                    <li>Industry:</li>
+                                </ul>
+                                <p>Use this area to describe your company or the job.</p>
+                                <button class="btn btn-primary" data-dismiss="modal" type="button">
+                                    <i class="fas fa-times"></i>
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block customer_js_links %}
+    <!-- Plugin JavaScript -->
+    <script src="{% static 'Career/vendor/jquery-easing/jquery.easing.js' %}"></script>
+
+    <!-- Contact form JavaScript -->
+    <script src="{% static 'Career/js/jqBootstrapValidation.js' %}"></script>
+    <script src="{% static 'Career/js/contact_me.js' %}"></script>
+
+    <!-- Custom scripts for this template -->
+    <script src="{% static 'Career/js/agency.js' %}"></script>
+{% endblock %}
+

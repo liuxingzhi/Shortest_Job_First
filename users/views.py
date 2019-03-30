@@ -18,7 +18,7 @@ def register(request):
                 realname = form.cleaned_data['realname']
                 usertype = form.cleaned_data['usertype']
 
-                query1 = "INSERT INTO user (password, email, username, realname, usertype) VALUES ('%s', '%s', '%s', '%s', '%s')" % (
+                query1 = """INSERT INTO user (password, email, username, realname, usertype) VALUES ('%s', '%s', '%s', '%s', '%s')""" % (
                     password, email, username, realname, usertype)
                 cursor.execute(query1)
                 query2 = "SELECT user_id FROM user WHERE username = '%s'" % username

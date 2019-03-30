@@ -82,7 +82,7 @@ class MySQLWrapper:
         self.insert_one(sql, data_dict)
         # except MySQLdb.IntegrityError as e:  # 如果有重复，就跳过它
         #     logging.log(e)
-            # print("data duplicate:", data_dict)
+        # print("data duplicate:", data_dict)
 
     def insert_one(self, sql: str, params=None):
         if params is None:
@@ -189,6 +189,12 @@ class MySQLWrapper:
             self._connection.close()
         print("db resources has released.")
 
+    def execute(self, sql: str):
+        self.cursor.execute(sql)
+
+    def fetchall(self):
+        return self.cursor.fetchall()
+
     # def __del__(self):
     #     self.release()
 
@@ -203,13 +209,31 @@ def test_query_title():
 
 if __name__ == '__main__':
     # test_query_title()
-    db = MySQLWrapper()
-    db2 = MySQLWrapper()
-    r = db.query_all("select * from Company")
-    print(r)
+    # db = MySQLWrapper()
+    # db2 = MySQLWrapper()
+    # r = db.query_all("select * from company")
+    # print(r)
     # # db.backup(table)
     # db.copy_table(table2, table)
     # db.backup(table)
     # sql = "select * from ? where sender = ?"
     # temp = db.query_by(sql,['msgapp_msgboard', 'kafka'])
     # print(temp)
+    job_title = "manager"
+    location = "IL"
+    company_name = ""
+    industry = "Internet"
+
+    with MySQLWrapper() as cursor:
+        sql = f'''select * from job as j
+           inner join company as c
+           on c.company_id = j.company_id
+           where lower(j.job_title) like "%{job_title}%"
+           and j.location like BINARY "%{location}%"
+           and c.company_name like "%{company_name}%"
+           and c.industry like "%{industry}%" 
+           order by j.job_id, j.location, c.industry, c.company_id asc'''
+        cursor.execute(sql)
+        results = cursor.fetchall()
+        for r in results:
+            print(r)
