@@ -36,7 +36,7 @@ def update_crawled_job_categories(job_category: str) -> None:
     with MySQLWrapper() as db:
         sql = f"""update job_categories as j
                 set j.crawled = true
-                where j.category= {job_category}
+                where j.category= '{job_category}'
             """
         db.execute(sql)
         db.commit()

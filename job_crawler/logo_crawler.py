@@ -33,7 +33,7 @@ def timeit(func):
     return wrapper
 
 
-def getHTMLText(url: str, encode=None, proxy_dict: Dict[str, str] = None) -> str:
+def getHTMLText(url: str, encode: str = None, proxy_dict: Dict[str, str] = None) -> str:
     try:
         r = requests.get(url, headers=headers, timeout=10, proxies=proxy_dict)
         # print(r.status_code)
