@@ -4,6 +4,8 @@ from typing import List, Dict, Tuple, Sequence
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.common.alert import Alert
+from selenium.common.exceptions import NoSuchWindowException,WebDriverException
 import os
 import time
 from bs4 import BeautifulSoup
@@ -38,6 +40,7 @@ def update_crawled_job_categories(job_category: str) -> None:
                 set j.crawled = true
                 where j.category= '{job_category}'
             """
+        print(sql)
         db.execute(sql)
         db.commit()
 
@@ -82,10 +85,14 @@ def crawl_bunch_of_job(category_list: List[str], threadID: int) -> None:
 
         try:
             crawl_one_job_title(one_job_category, driver)
+            update_crawled_job_categories(one_job_category)
+        # except NoSuchWindowException as e:
+        #     logging.log(logging.INFO, str(e))
+        #     driver.quit()
+        #     return
         except Exception as e:
             logging.log(logging.INFO, f"出错了，跳过当前job{one_job_category}:" + str(e))
-        finally:
-            update_crawled_job_categories(one_job_category)
+        #     update_crawled_job_categories(one_job_category)
     driver.quit()
 
 
@@ -121,7 +128,7 @@ def crawl_one_job_title(job: str, driver: webdriver.Chrome) -> None:
                         # 抓小广告，关了去
                         driver.implicitly_wait(0)  # 如果不设成0,会等time_limit时间的小广告
                         try:
-                            ad_div = driver.find_element_by_xpath("""//div[@id="JAModal"]/div""")
+                            ad_div = driver.find_element_by_xpath("""//*[@id="JAModal"]/div/div[2]/div/div[1]""")
                         except selenium.common.exceptions.NoSuchElementException as e:
                             ad_div = None
 
@@ -129,7 +136,8 @@ def crawl_one_job_title(job: str, driver: webdriver.Chrome) -> None:
                             # 如果不是隐藏的广告，关闭之
                             ad_div_class = ad_div.get_attribute("class")
                             if not ad_div_class.__contains__("hidden"):
-                                ad_close_tab = driver.find_element_by_xpath("""//*[@id="JAModal"]/div/div[2]/div[1]""")
+                                ad_close_tab = driver.find_element_by_xpath(
+                                    """//*[@id="JAModal"]/div/div[2]/div/div[1]""")
                                 ad_close_tab.click()
 
                         job_id = li.get_attribute("data-id")

@@ -69,7 +69,16 @@ def write_to_file(file_path: str, category_list: List[str]) -> None:
             f.write(job.lower() + "\n")
 
 
+def reset_job_category_table() -> int:
+    with MySQLWrapper() as db:
+        sql = f"""update job_categories as j
+             set j.crawled = FALSE"""
+        db.execute(sql)
+        db.commit()
+
+
 if __name__ == '__main__':
-    job_list = get_job_category_list()
-    init_table(job_list)
-    write_to_file("job_list.txt", job_list)
+    # job_list = get_job_category_list()
+    # init_table(job_list)
+    # write_to_file("job_list.txt", job_list)
+    reset_job_category_table()
