@@ -82,8 +82,8 @@ CREATE TABLE IF NOT EXISTS job
   salary               VARCHAR(100),
   job_title            VARCHAR(100),
   location             VARCHAR(100),
-  job_description      VARCHAR(27000),
-  job_description_html varchar(33000),
+  job_description      TEXT,
+  job_description_html TEXT,
   posted_time          VARCHAR(100),
   headhunter_id        INT DEFAULT NULL,
   PRIMARY KEY (job_id),
@@ -104,8 +104,8 @@ CREATE TABLE IF NOT EXISTS job_data_unclean
   salary               VARCHAR(100),
   job_title            VARCHAR(100),
   location             VARCHAR(100),
-  job_description      VARCHAR(27000),
-  job_description_html varchar(33000),
+  job_description      TEXT,
+  job_description_html TEXT,
   posted_time          VARCHAR(100),
   headhunter_id        INT,
   PRIMARY KEY (job_id),
@@ -159,4 +159,18 @@ CREATE TABLE IF NOT EXISTS company_logo_downloaded
   company_id BIGINT(11) NOT NULL,
   downloaded  BOOL DEFAULT FALSE,
   PRIMARY KEY (company_id)
-)
+);
+
+CREATE TABLE IF NOT EXISTS proxies
+(
+  ip VARCHAR(100),
+  port VARCHAR(10),
+  location VARCHAR(5),
+  last_checked VARCHAR(50)
+);
+
+CREATE TABLE IF NOT EXISTS user_agents
+(
+  agent VARCHAR(300),
+  os VARCHAR(20)
+);

@@ -3,18 +3,14 @@ from django.db import connection
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from .forms import JobPostForm
-
-
-@login_required
-def simple_search(request):
-    with connection.cursor() as cursor:
-        if request.method == 'POST':
-            search_text = request.POST.get('textfield', None)
-            query = ("SELECT job_title, company_name, location FROM job, company WHERE job.company_id = company.company_id AND job_title LIKE '%{0}%'").format(search_text)
-            cursor.execute(query)
-            result = cursor.fetchall()
-            return render(request, 'jobs/searchbar.html', {'results': result})
-    return render(request, 'jobs/searchbar.html')
+from django.shortcuts import render
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic import (
+    ListView,
+    DetailView,
+    DeleteView
+)
+from .models import Post
 
 @login_required
 def post_job(request):
@@ -39,6 +35,8 @@ def post_job(request):
                     uid_str = str2[1:str2.__len__() - 2]
                     query3 = "INSERT INTO job (job_title, salary, location, job_description, headhunter_id) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')".format(job_title, salary, location, job_description, uid_str)
                     cursor.execute(query3)
+                    p = Post(job_title=job_title, salary=salary, location=location, job_description=job_description, author=request.user)
+                    p.save()
                     #message
                     return redirect('profile')
             else:
@@ -75,3 +73,34 @@ def see_posted(request):
         else:
             #message
             return redirect('jobsite-home')
+
+
+
+def home(request):
+    context = {
+        'posts': Post.objects.all()
+    }
+    return render(request, 'jobs/home.html', context)
+
+
+class PostListView(ListView):
+    model = Post
+    template_name = 'jobs/job_list.html'
+    context_object_name = 'posts'
+    ordering = ['-date_posted']
+
+
+class PostDetailView(DetailView):
+    model = Post
+    template_name = 'jobs/job_detail.html'
+
+
+class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Post
+    success_url = '/'
+
+    def test_func(self):
+        post = self.get_object()
+        if self.request.user == post.author:
+            return True
+        return False

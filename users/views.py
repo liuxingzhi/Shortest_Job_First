@@ -13,20 +13,19 @@ def register(request):
                 # form.save()
                 # username = form.cleaned_data.get('username')
                 email = form.cleaned_data.get('email')
-                password = form.cleaned_data['password1']
                 username = form.cleaned_data['username']
                 realname = form.cleaned_data['realname']
                 usertype = form.cleaned_data['usertype']
+                password = form.cleaned_data.get('password1')
 
-                query1 = """INSERT INTO user (password, email, username, realname, usertype) VALUES ('%s', '%s', '%s', '%s', '%s')""" % (
-                    password, email, username, realname, usertype)
+                query1 = """INSERT INTO user (email, username, realname, usertype) VALUES ('%s', '%s', '%s', '%s')""" % (
+                    email, username, realname, usertype)
                 cursor.execute(query1)
                 query2 = "SELECT user_id FROM user WHERE username = '%s'" % username
                 cursor.execute(query2)
                 uid = cursor.fetchone()
 
                 str1 = "{0}".format(usertype)
-                print(str1)
                 if str1 == "0":
                     query3 = "INSERT INTO jobseeker (user_id) VALUES ('%s')" % uid
                     cursor.execute(query3)

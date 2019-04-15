@@ -23,6 +23,9 @@ from job_crawler.MySQLWrapper import MySQLWrapper
 import MySQLdb
 from MySQLdb import OperationalError, IntegrityError
 import logging
+from job_crawler.ip_address_crawler import get_a_proxy
+from job_crawler.user_agents_crawler import get_a_useragent
+
 
 logging.basicConfig(level=logging.INFO, filename="glassdoor_crawling.log", filemode='w')
 
@@ -36,7 +39,7 @@ def update_crawled_job_categories(job_category: str) -> None:
     with MySQLWrapper() as db:
         sql = f"""update job_categories as j
                 set j.crawled = true
-                where j.category= {job_category}
+                where j.category= '{job_category}'
             """
         db.execute(sql)
         db.commit()
@@ -52,8 +55,17 @@ def fetch_uncrawled_job_categories() -> List[str]:
         return job_category_list
 
 
-def get_brower() -> selenium.webdriver:
+def get_browser(anonymous=False) -> selenium.webdriver:
     chrome_options = Options()
+    proxy = get_a_proxy()
+    user_agent = get_a_useragent()
+    arg1 = '--proxy-server=%s' % proxy
+    arg2 = "--user-agent=%s" % user_agent
+    print(arg1)
+    print(arg2)
+    if anonymous:
+        chrome_options.add_argument(arg1)
+        chrome_options.add_argument(arg2)
     # chrome_options.add_argument('--headless')  # 运行时关闭窗口
     # 使用同一目录下的chromedriver进行模拟
     browser_driver_address = str
@@ -75,7 +87,11 @@ def get_brower() -> selenium.webdriver:
 
 def crawl_bunch_of_job(category_list: List[str], threadID: int) -> None:
     print(threadID)
-    driver = get_brower()
+    driver = get_browser()
+    #driver.get("https://www.glassdoor.com/index.htm")
+    #driver.get("https://www.google.com/search?source=hp&ei=qaOzXOHHHs2MtgXska-wCw&q=my+ip&btnK=Google+Search&oq=my+ip&gs_l=psy-ab.3..35i39j0i20i263j0l8.1027.1874..2138...0.0..0.98.458.6....2..0....1..gws-wiz.....0..0i228j0i67j0i131.UlOOrCDEtcg")
+    #driver.get("https://www.google.com")
+    #driver.implicitly_wait(100000)
     for one_job_category in category_list:
         with open("job_crawled.txt", "a+") as f:
             f.write(one_job_category + "\n")
@@ -319,7 +335,7 @@ if __name__ == '__main__':
 
     job_list = fetch_uncrawled_job_categories()
 
-    pool_size = 1
+    pool_size = 3
     pool = multiprocessing.Pool(pool_size)
     total_num_job_titles = len(job_list)
     one_thread_task = total_num_job_titles // pool_size

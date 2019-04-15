@@ -30,9 +30,10 @@ urlpatterns = [
     path("login/", auth_views.LoginView.as_view(template_name='users/signin.html'), name="login"),
     path("logout/", auth_views.LogoutView.as_view(template_name='users/signout.html'), name="logout"),
     path('profile/', user_views.profile, name='profile'),
-    path('search/', search_views.simple_search),
-    path('postjob/', search_views.post_job),
-    path('userjob/', search_views.see_posted),
+    path('postjob/', search_views.post_job, name='job-post'),
+    path('post/', search_views.PostListView.as_view(), name='job-list'),
+    path('post/<int:pk>/', search_views.PostDetailView.as_view(), name='job-detail'),
+    path('post/<int:pk>/delete/', search_views.PostDeleteView.as_view(), name='post-delete'),
 ]
 
 if settings.DEBUG:

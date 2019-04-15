@@ -1,0 +1,17 @@
+{% extends "jobs/job_base.html" %}
+{% block content %}
+  <article class="media content-section">
+    <div class="media-body">
+      <div class="article-metadata">
+        <small class="text-muted">{{ object.date_posted|date:"F d, Y" }}</small>
+          <div>
+            <a class="btn btn-danger btn-sm mt-1 mb-1" href="{% url 'post-delete' object.id %}">Delete</a>
+          </div>
+      </div>
+      <h2 class="article-title">{{ object.job_title }}</h2>
+      <p class="article-content">{{ object.salary }}</p>
+        <p class="article-content">{{ object.location }}</p>
+        <p class="article-content">{{ object.job_description }}</p>
+    </div>
+  </article>
+{% endblock content %}
