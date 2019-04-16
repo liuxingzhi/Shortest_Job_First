@@ -13,11 +13,12 @@ from MySQLdb import OperationalError, IntegrityError
 from job_crawler.ip_address_crawler import get_a_proxy
 from job_crawler.user_agents_crawler import get_a_useragent
 
-
 logging.basicConfig(level=logging.INFO)
 code = None
 imgs_task_queue = Queue()
 saved_dir = os.path.join("..", "media", "company_logos")
+if not os.path.exists(saved_dir):
+    os.makedirs(saved_dir)
 
 
 def timeit(func):
@@ -33,11 +34,11 @@ def timeit(func):
     return wrapper
 
 
-def getHTMLText(url: str, encode=None) -> str:
+def getHTMLText(url: str, encode: str = None, proxy_dict: Dict[str, str] = None) -> str:
     try:
         user_agent = get_a_useragent()
         headers = {'User-Agent': user_agent}
-        r = requests.get(url, headers=headers, timeout=10)
+        r = requests.get(url, headers=headers, timeout=10, proxies=proxy_dict)
         # print(r.status_code)
         r.raise_for_status()
         if encode is None:
@@ -101,7 +102,7 @@ def save_imgs_task() -> None:
                     print(f"downloaded {company_id} logo")
 
 
-def job_dispatcher(thread_num: int) -> None:
+def logo_crawler_job_dispatcher(thread_num: int) -> None:
     with MySQLWrapper() as db:
         sql = """select c.company_id, c.logo_url
                     from company_data_unclean as c
@@ -160,4 +161,4 @@ def init():
 
 if __name__ == '__main__':
     init()
-    job_dispatcher(4)
+    logo_crawler_job_dispatcher(4)

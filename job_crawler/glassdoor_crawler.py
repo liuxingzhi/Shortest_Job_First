@@ -4,6 +4,8 @@ from typing import List, Dict, Tuple, Sequence
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.common.alert import Alert
+from selenium.common.exceptions import NoSuchWindowException, WebDriverException
 import os
 import time
 from bs4 import BeautifulSoup
@@ -26,7 +28,6 @@ import logging
 from job_crawler.ip_address_crawler import get_a_proxy
 from job_crawler.user_agents_crawler import get_a_useragent
 
-
 logging.basicConfig(level=logging.INFO, filename="glassdoor_crawling.log", filemode='w')
 
 glassdoor_main_url = "https://www.glassdoor.com/Job/jobs.htm?suggestCount=0&suggestChosen=false&clickSource=searchBtn&typedKeyword=software&sc.keyword=software&locT=&locId=&jobType="
@@ -41,6 +42,7 @@ def update_crawled_job_categories(job_category: str) -> None:
                 set j.crawled = true
                 where j.category= '{job_category}'
             """
+        print(sql)
         db.execute(sql)
         db.commit()
 
@@ -61,8 +63,8 @@ def get_browser(anonymous=False) -> selenium.webdriver:
     user_agent = get_a_useragent()
     arg1 = '--proxy-server=%s' % proxy
     arg2 = "--user-agent=%s" % user_agent
-    print(arg1)
-    print(arg2)
+    # print(arg1)
+    # print(arg2)
     if anonymous:
         chrome_options.add_argument(arg1)
         chrome_options.add_argument(arg2)
@@ -88,20 +90,24 @@ def get_browser(anonymous=False) -> selenium.webdriver:
 def crawl_bunch_of_job(category_list: List[str], threadID: int) -> None:
     print(threadID)
     driver = get_browser()
-    #driver.get("https://www.glassdoor.com/index.htm")
-    #driver.get("https://www.google.com/search?source=hp&ei=qaOzXOHHHs2MtgXska-wCw&q=my+ip&btnK=Google+Search&oq=my+ip&gs_l=psy-ab.3..35i39j0i20i263j0l8.1027.1874..2138...0.0..0.98.458.6....2..0....1..gws-wiz.....0..0i228j0i67j0i131.UlOOrCDEtcg")
-    #driver.get("https://www.google.com")
-    #driver.implicitly_wait(100000)
+    # driver.get("https://www.glassdoor.com/index.htm")
+    # driver.get("https://www.google.com/search?source=hp&ei=qaOzXOHHHs2MtgXska-wCw&q=my+ip&btnK=Google+Search&oq=my+ip&gs_l=psy-ab.3..35i39j0i20i263j0l8.1027.1874..2138...0.0..0.98.458.6....2..0....1..gws-wiz.....0..0i228j0i67j0i131.UlOOrCDEtcg")
+    # driver.get("https://www.google.com")
+    # driver.implicitly_wait(100000)
     for one_job_category in category_list:
         with open("job_crawled.txt", "a+") as f:
             f.write(one_job_category + "\n")
 
-        try:
+            # try:
             crawl_one_job_title(one_job_category, driver)
-        except Exception as e:
-            logging.log(logging.INFO, f"出错了，跳过当前job{one_job_category}:" + str(e))
-        finally:
             update_crawled_job_categories(one_job_category)
+        # except NoSuchWindowException as e:
+        #     logging.log(logging.INFO, str(e))
+        #     driver.quit()
+        #     return
+        # except Exception as e:
+        #     logging.log(logging.INFO, f"出错了，跳过当前job{one_job_category}:" + str(e))
+        #     update_crawled_job_categories(one_job_category)
     driver.quit()
 
 
@@ -137,7 +143,7 @@ def crawl_one_job_title(job: str, driver: webdriver.Chrome) -> None:
                         # 抓小广告，关了去
                         driver.implicitly_wait(0)  # 如果不设成0,会等time_limit时间的小广告
                         try:
-                            ad_div = driver.find_element_by_xpath("""//div[@id="JAModal"]/div""")
+                            ad_div = driver.find_element_by_xpath("""//*[@id="JAModal"]/div/div[2]/div/div[1]""")
                         except selenium.common.exceptions.NoSuchElementException as e:
                             ad_div = None
 
@@ -145,7 +151,8 @@ def crawl_one_job_title(job: str, driver: webdriver.Chrome) -> None:
                             # 如果不是隐藏的广告，关闭之
                             ad_div_class = ad_div.get_attribute("class")
                             if not ad_div_class.__contains__("hidden"):
-                                ad_close_tab = driver.find_element_by_xpath("""//*[@id="JAModal"]/div/div[2]/div[1]""")
+                                ad_close_tab = driver.find_element_by_xpath(
+                                    """//*[@id="JAModal"]/div/div[2]/div/div[1]""")
                                 ad_close_tab.click()
 
                         job_id = li.get_attribute("data-id")
@@ -321,7 +328,7 @@ def crawl_one_job_title(job: str, driver: webdriver.Chrome) -> None:
                 print("这页有问题,去下一页了" + str(e))
 
 
-if __name__ == '__main__':
+def dispatch_job_categories(pool_size: int):
     # with open(job_list_file, "r") as f:
     #     lines = f.readlines()
     #     lines = [x.strip() for x in lines]
@@ -335,22 +342,22 @@ if __name__ == '__main__':
 
     job_list = fetch_uncrawled_job_categories()
 
-    pool_size = 3
-    pool = multiprocessing.Pool(pool_size)
+    # pool_size = 3
+    # pool = multiprocessing.Pool(pool_size)
     total_num_job_titles = len(job_list)
-    one_thread_task = total_num_job_titles // pool_size
+    one_process_task = total_num_job_titles // pool_size
 
     job_divisions = []
     for i in range(pool_size):
         if i == 0:
             start = 0
         else:
-            start = i * one_thread_task
+            start = i * one_process_task
 
         if i == pool_size:
-            end = one_thread_task
+            end = one_process_task
         else:
-            end = (i + 1) * one_thread_task
+            end = (i + 1) * one_process_task
 
         division = job_list[int(start):int(end)]
         job_divisions.append(division)
@@ -363,3 +370,38 @@ if __name__ == '__main__':
 
     for i in range(pool_size):
         processes[i].join()
+    print("=====glassdoor crawler finished=====")
+
+
+if __name__ == '__main__':
+    dispatch_job_categories(1)
+    # job_list = fetch_uncrawled_job_categories()
+    #
+    # pool_size = 1
+    # # pool = multiprocessing.Pool(pool_size)
+    # total_num_job_titles = len(job_list)
+    # one_process_task = total_num_job_titles // pool_size
+    #
+    # job_divisions = []
+    # for i in range(pool_size):
+    #     if i == 0:
+    #         start = 0
+    #     else:
+    #         start = i * one_process_task
+    #
+    #     if i == pool_size:
+    #         end = one_process_task
+    #     else:
+    #         end = (i + 1) * one_process_task
+    #
+    #     division = job_list[int(start):int(end)]
+    #     job_divisions.append(division)
+    #
+    # processes = []
+    # for i in range(pool_size):
+    #     pro = Process(target=crawl_bunch_of_job, args=(job_divisions[i], i), daemon=False)
+    #     processes.append(pro)
+    #     pro.start()
+    #
+    # for i in range(pool_size):
+    #     processes[i].join()
