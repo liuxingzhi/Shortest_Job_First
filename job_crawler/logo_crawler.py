@@ -10,14 +10,15 @@ import logging
 from job_crawler.MySQLWrapper import MySQLWrapper
 import MySQLdb
 from MySQLdb import OperationalError, IntegrityError
+from job_crawler.ip_address_crawler import get_a_proxy
+from job_crawler.user_agents_crawler import get_a_useragent
 
 logging.basicConfig(level=logging.INFO)
 code = None
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0 Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0'}
-
 imgs_task_queue = Queue()
 saved_dir = os.path.join("..", "media", "company_logos")
+if not os.path.exists(saved_dir):
+    os.makedirs(saved_dir)
 
 
 def timeit(func):
@@ -35,6 +36,8 @@ def timeit(func):
 
 def getHTMLText(url: str, encode: str = None, proxy_dict: Dict[str, str] = None) -> str:
     try:
+        user_agent = get_a_useragent()
+        headers = {'User-Agent': user_agent}
         r = requests.get(url, headers=headers, timeout=10, proxies=proxy_dict)
         # print(r.status_code)
         r.raise_for_status()
@@ -50,9 +53,15 @@ def getHTMLText(url: str, encode: str = None, proxy_dict: Dict[str, str] = None)
         return ""
 
 
-def get_picture_content(url: str) -> Optional[bytes]:
+def get_picture_content(url: str, anonymous=False) -> Optional[bytes]:
     try:
-        r = requests.get(url, headers=headers, timeout=10)
+        user_agent = get_a_useragent()
+        headers = {'User-Agent': user_agent}
+        proxy = get_a_proxy()
+        if anonymous:
+            r = requests.get(url, headers=headers, timeout=10, proxies=proxy)
+        else:
+            r = requests.get(url, headers=headers, timeout=10)
         # print(r.status_code)
         r.raise_for_status()
         return r.content
@@ -68,7 +77,7 @@ def save_imgs_task() -> None:
             if url_task is None:
                 break
             company_id, url = url_task
-            stored_path = os.path.join(saved_dir, company_id + ".png")
+            stored_path = os.path.join(saved_dir, str(company_id) + ".png")
             # print("saving image")
             # get_picture_content(url)
             with open(stored_path, 'wb') as f:
@@ -83,7 +92,7 @@ def save_imgs_task() -> None:
                             """
 
                     db.execute(sql)
-                    logo_path = os.path.join("company", company_id + ".png")
+                    logo_path = os.path.join("company", str(company_id) + ".png")
                     sql = f"""update company_data_unclean as c
                             set c.logo_path = '{logo_path}'
                             where c.company_id = {company_id}
@@ -93,7 +102,7 @@ def save_imgs_task() -> None:
                     print(f"downloaded {company_id} logo")
 
 
-def job_dispatcher(thread_num: int) -> None:
+def logo_crawler_job_dispatcher(thread_num: int) -> None:
     with MySQLWrapper() as db:
         sql = """select c.company_id, c.logo_url
                     from company_data_unclean as c
@@ -152,4 +161,4 @@ def init():
 
 if __name__ == '__main__':
     init()
-    job_dispatcher(4)
+    logo_crawler_job_dispatcher(4)

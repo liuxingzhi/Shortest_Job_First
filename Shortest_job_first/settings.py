@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'jobsite.apps.JobsiteConfig',
+    'jobs.apps.JobsConfig',
     'users.apps.UsersConfig',
     'crispy_forms',
 ]
