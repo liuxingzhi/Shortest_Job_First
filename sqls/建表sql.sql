@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS jobseeker
   university         VARCHAR(100),
   graduation_date    int(11),
   salary_expectation VARCHAR(100),
+  personal_summary   VARCHAR(1500),
   UNIQUE (user_id),
   FOREIGN KEY (user_id)
     REFERENCES user (user_id)
@@ -174,3 +175,12 @@ CREATE TABLE IF NOT EXISTS user_agents
   agent VARCHAR(300),
   os VARCHAR(20)
 );
+
+CREATE TABLE IF NOT EXISTS browse_time
+(
+  job_id bigint(11),
+  user_id int(11),
+  start_time VARCHAR(50),
+  end_time VARCHAR(50),
+  time_elapsed VARCHAR(50)
+)

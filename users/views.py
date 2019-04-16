@@ -72,9 +72,10 @@ def profile(request):
                     university = p_form.cleaned_data['university']
                     graduation = p_form.cleaned_data['graduation']
                     salary = p_form.cleaned_data['salary']
+                    personal_summary = p_form.cleaned_data['personal_summary']
                     query3 = "UPDATE jobseeker SET major = '%s', GPA = '%s', university = '%s', graduation_date = '%s'" \
-                             ", salary_expectation = '%s' WHERE user_id = %s" % (
-                             major, gpa, university, graduation, salary, uid_str)
+                             ", salary_expectation = '%s', personal_summary = '%s' WHERE user_id = %s" % (
+                             major, gpa, university, graduation, salary, personal_summary, uid_str)
                     cursor.execute(query3)
 
                     u_form.save()

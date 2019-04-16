@@ -8,6 +8,7 @@ from django.core.serializers import serialize
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import connection
 import django
+from django.contrib.auth.models import User
 
 
 # Create your views here.
@@ -87,3 +88,36 @@ def add_favorite_job(request, job_id):
 
 def show_favorite_job(request, user_id):
     pass
+
+def timer_start(request):
+    with connection.cursor() as cursor:
+        print("entered view timer_start")
+        start_time = request.GET.get('start')
+        job_id = request.GET.get('job_id')
+        uid = get_uid(request.user.username)
+        query = f"""insert into browse_time (job_id, user_id, start_time, end_time) values('{job_id}', '{uid}', '{start_time}', '0') """
+        cursor.execute(query)
+        return HttpResponse('')
+
+
+def timer_end(request):
+    with connection.cursor() as cursor:
+        print("entered view timer_end")
+        end_time = request.GET.get('end')
+        job_id = request.GET.get('job_id')
+        uid = get_uid(request.user.username)
+        query1 = f"""UPDATE browse_time SET end_time = '{end_time}' WHERE job_id = '{job_id}' AND user_id = '{uid}' AND end_time = '0'"""
+        cursor.execute(query1)
+        query2 = f"""UPDATE browse_time SET time_elapsed = end_time - start_time WHERE job_id = '{job_id}' AND user_id = '{uid}' AND end_time = '{end_time}'"""
+        cursor.execute(query2)
+        return HttpResponse('')
+
+
+def get_uid(username: str):
+    with connection.cursor() as cursor:
+        query = "SELECT user_id FROM user WHERE username = '%s'" % username
+        cursor.execute(query)
+        uid = cursor.fetchone()
+        str2 = "{0}".format(uid)
+        uid_str = str2[1:str2.__len__() - 2]
+        return uid_str
