@@ -45,6 +45,7 @@ def profile(request):
     with connection.cursor() as cursor:
         if request.method == 'POST':
             query = "SELECT usertype FROM user WHERE username = '%s'" % request.user.username
+            previous_name = request.user.username
             cursor.execute(query)
             usertype = cursor.fetchone()
             str1 = "{0}".format(usertype)
@@ -59,7 +60,9 @@ def profile(request):
                     username = u_form.cleaned_data.get('username')
                     email = u_form.cleaned_data.get('email')
                     query1 = "UPDATE user SET username = '%s', email = '%s' WHERE username = '%s'" % (
-                    username, email, request.user.username)
+                    username, email, previous_name)
+                    print(username)
+                    print(request.user.username)
                     cursor.execute(query1)
                     query2 = "SELECT user_id FROM user WHERE username = '%s'" % username
                     cursor.execute(query2)
@@ -92,7 +95,7 @@ def profile(request):
                     username = u_form.cleaned_data.get('username')
                     email = u_form.cleaned_data.get('email')
                     query1 = "UPDATE user SET username = '%s', email = '%s' WHERE username = '%s'" % (
-                        username, email, request.user.username)
+                        username, email, previous_name)
                     cursor.execute(query1)
                     query2 = "SELECT user_id FROM user WHERE username = '%s'" % username
                     cursor.execute(query2)
