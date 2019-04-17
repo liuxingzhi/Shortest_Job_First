@@ -58,8 +58,13 @@ def get_picture_content(url: str, anonymous=False) -> Optional[bytes]:
         user_agent = get_a_useragent()
         headers = {'User-Agent': user_agent}
         proxy = get_a_proxy()
+        proxies_dict = {
+            'http': proxy,
+            'https': proxy,
+        }
+        # print(proxies_dict)
         if anonymous:
-            r = requests.get(url, headers=headers, timeout=10, proxies=proxy)
+            r = requests.get(url, headers=headers, timeout=10, proxies=proxies_dict)
         else:
             r = requests.get(url, headers=headers, timeout=10)
         # print(r.status_code)
@@ -77,29 +82,30 @@ def save_imgs_task() -> None:
             if url_task is None:
                 break
             company_id, url = url_task
+            print(url)
             stored_path = os.path.join(saved_dir, str(company_id) + ".png")
             # print("saving image")
             # get_picture_content(url)
+            picture_content = get_picture_content(url, anonymous=True)
+            if picture_content is None:
+                print(company_id, "failed")
+                continue
             with open(stored_path, 'wb') as f:
-                try:
-                    f.write(get_picture_content(url))
-                except Exception as e:
-                    logging.log(logging.INFO, f"failed at:{company_id}, {str(e)}")
-                else:
-                    sql = f"""update company_logo_downloaded as c
-                                set c.downloaded = true
-                                where c.company_id = {company_id}
-                            """
+                f.write(picture_content)
+            sql = f"""update company_logo_downloaded as c
+                        set c.downloaded = true
+                        where c.company_id = {company_id}
+                    """
 
-                    db.execute(sql)
-                    logo_path = os.path.join("company", str(company_id) + ".png")
-                    sql = f"""update company_data_unclean as c
-                            set c.logo_path = '{logo_path}'
-                            where c.company_id = {company_id}
-                            """
-                    db.execute(sql)
-                    db.commit()
-                    print(f"downloaded {company_id} logo")
+            db.execute(sql)
+            logo_path = os.path.join("company", str(company_id) + ".png")
+            sql = f"""update company_data_unclean as c
+                    set c.logo_path = '{logo_path}'
+                    where c.company_id = {company_id}
+                    """
+            db.execute(sql)
+            db.commit()
+            print(f"downloaded {company_id} logo")
 
 
 def logo_crawler_job_dispatcher(thread_num: int) -> None:

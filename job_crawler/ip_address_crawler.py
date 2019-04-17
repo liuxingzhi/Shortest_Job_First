@@ -12,7 +12,8 @@ import threading
 logging.basicConfig(level=logging.INFO)
 code = None
 headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0 Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0'}
+    'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0 Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0'
+}
 glassdoor_main_url = "https://www.glassdoor.com/Job/jobs.htm?suggestCount=0&suggestChosen=false&clickSource=searchBtn&typedKeyword=software&sc.keyword=software&locT=&locId=&jobType="
 
 ip_queue = Queue()
@@ -20,7 +21,7 @@ ip_queue = Queue()
 
 def getHTMLText(url: str, encode=None, proxy=None) -> str:
     try:
-        r = requests.get(url, headers=headers, timeout=10, proxies=proxy)
+        r = requests.get(url, headers=headers, timeout=3, proxies=proxy)
         # print(r.status_code)
         r.raise_for_status()
         if encode is None:
@@ -33,6 +34,25 @@ def getHTMLText(url: str, encode=None, proxy=None) -> str:
     except Exception as e:
         logging.log(logging.INFO, str(e))
         return ""
+
+
+def get_picture_content(url: str, proxy: str = None, anonymous=False) -> Optional[bytes]:
+    try:
+        proxies_dict = {
+            'http': proxy,
+            'https': proxy,
+        }
+        # print(proxies_dict)
+        if anonymous:
+            r = requests.get(url, headers=headers, timeout=3, proxies=proxies_dict)
+        else:
+            r = requests.get(url, headers=headers, timeout=3)
+        # print(r.status_code)
+        r.raise_for_status()
+        return r.content
+    except Exception as e:
+        logging.log(logging.INFO, str(e))
+        return None
 
 
 def init_proxy_database():
@@ -92,15 +112,16 @@ def try_proxy():
                 break
             ip, port, location, last_checked = tuple_pack
             proxy = ":".join([ip, port])
-
-            text1 = getHTMLText(glassdoor_main_url, proxy)
-            if text1 == "":
+            try_url = "https://media.glassdoor.com/sqlm/1152051/cascade-management-squarelogo-1469741510397.png"
+            content = get_picture_content(try_url, proxy, anonymous=True)
+            # print(text1)
+            if content is None:
                 print(proxy, "failed")
             else:
                 query2 = f"""insert into proxies values('{ip}', '{port}', '{location}','{last_checked}') """
                 db.execute(query2)
                 db.commit()
-                print(proxy, "success")
+                print(proxy, "success", "let's add it to database")
 
 
 def get_a_proxy():
@@ -119,6 +140,7 @@ def get_a_proxy():
         result1 = str1[2:str1.__len__() - 3]
         result2 = str2[2:str2.__len__() - 3]
         result = ":".join([result1, result2])
+        # print(result)
         return result
 
 
@@ -131,3 +153,4 @@ def run_proxy_crawler(thread_count: int = 30):
 
 if __name__ == '__main__':
     run_proxy_crawler()
+    # print(get_a_proxy())
