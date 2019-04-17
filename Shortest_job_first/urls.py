@@ -21,6 +21,7 @@ from users import views as user_views
 from django.conf import settings
 from django.conf.urls.static import static
 from jobs import views as search_views
+from recommendation import views as reco_views
 
 urlpatterns = [
     path("", jobsite_views.homeproc, name="jobsite-home"),
@@ -34,6 +35,7 @@ urlpatterns = [
     path('post/', search_views.PostListView.as_view(), name='job-list'),
     path('post/<int:pk>/', search_views.PostDetailView.as_view(), name='job-detail'),
     path('post/<int:pk>/delete/', search_views.PostDeleteView.as_view(), name='post-delete'),
+    path('testemail/', reco_views.send_email, name='send-mail'),
 ]
 
 if settings.DEBUG:
