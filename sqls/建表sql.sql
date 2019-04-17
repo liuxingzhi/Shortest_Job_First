@@ -183,4 +183,25 @@ CREATE TABLE IF NOT EXISTS browse_time
   start_time VARCHAR(50),
   end_time VARCHAR(50),
   time_elapsed VARCHAR(50)
-)
+);
+
+CREATE TABLE IF NOT EXISTS search_history
+(
+  user_id int(11),
+  search_time VARCHAR(50),
+  job_title VARCHAR(100),
+  company_name VARCHAR(100),
+  industry VARCHAR(100),
+  location VARCHAR(100)
+);
+
+create table if not exists job_bag_of_words_repr
+(
+    job_id       BIGINT(11) NOT NULL,
+    job_title    text,
+    bag_of_words text,
+    FOREIGN KEY (job_id)
+        REFERENCES job (job_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);

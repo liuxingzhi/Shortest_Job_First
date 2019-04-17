@@ -89,7 +89,7 @@
                             <input type="text" class="search-filed" placeholder="company name" name="company_name">
                             <input type="text" class="search-filed" placeholder="industry" name="industry">
                             <input type="text" class="search-field" placeholder="location" name="location">
-                            <button class="search-btnn" type="submit"> Search</button>
+                            <button class="search-btnn" onclick="search_content_saver()" type="submit"> Search</button>
                         </div>
                     </form>
                     <h3 class="section-subheading text-muted"></h3>
@@ -198,7 +198,8 @@
                                         {% endautoescape %}
                                     </div>
 
-                                    <button class="btn btn-primary" data-dismiss="modal" onclick="timerend({{ record.job_id }})" type="button">
+                                    <button class="btn btn-primary" data-dismiss="modal"
+                                            onclick="timerend({{ record.job_id }})" type="button">
                                         <i class="fas fa-times"></i>
                                         Close
                                     </button>
@@ -213,6 +214,7 @@
 
     <script>
         let temp = "Initial";
+
         function timerstart(job_id) {
             let date = new Date();
             let start = date.getTime();
@@ -227,7 +229,7 @@
                     'job_id': job_id
                 },
                 success: function (data) {
-                    alert("Successfully sent the URL to Django");
+                    alert("Successfully sent to Django");
                 }
             });
         }
@@ -246,12 +248,12 @@
                     'job_id': job_id
                 },
                 success: function () {
-                    alert("Successfully sent the URL to Django");
+                    alert("Successfully sent to Django");
                 }
             });
         }
 
-        window.addEventListener('unload', function(event) {
+        window.addEventListener('unload', function (event) {
             console.log('Closed');
             if (temp != "Initial") {
                 let date = new Date();
@@ -266,11 +268,38 @@
                         'job_id': temp
                     },
                     success: function () {
-                        alert("Successfully sent the URL to Django");
+                        alert("Successfully sent to Django");
                     }
                 });
             }
         });
+
+
+        function search_content_saver() {
+            console.log("enter saver function");
+            let job_title = $("input[name='job_title']").val();
+            let company_name = $("input[name='company_name']").val();
+            let industry = $("input[name='industry']").val();
+            let location = $("input[name='location']").val();
+            let date = new Date();
+            let time = date.getTime();
+            $.ajax({
+                url: "/jobsite/ajax/saver",
+                type: 'GET',
+                async: true,
+                dataType: 'json',
+                data: {
+                        'time': time,
+                        'job_title': job_title,
+                        'company_name': company_name,
+                        'industry': industry,
+                        'location': location
+                    },
+                success: function () {
+                    alert("Successfully sent to Django");
+                }
+            });
+        }
     </script>
 {% endblock %}
 

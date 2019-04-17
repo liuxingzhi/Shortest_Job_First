@@ -113,6 +113,20 @@ def timer_end(request):
         return HttpResponse('')
 
 
+def search_content_saver(request):
+    with connection.cursor() as cursor:
+        print("entered view saver")
+        search_time = request.GET.get('time')
+        job_title = request.GET.get('job_title')
+        company_name = request.GET.get('company_name')
+        industry = request.GET.get('industry')
+        location = request.GET.get('location')
+        uid = get_uid(request.user.username)
+        query = f"""insert into search_history (user_id, search_time, job_title, company_name, industry, location) values('{uid}', '{search_time}', '{job_title}', '{company_name}', '{industry}', '{location}') """
+        cursor.execute(query)
+        return HttpResponse('')
+
+
 def get_uid(username: str):
     with connection.cursor() as cursor:
         query = "SELECT user_id FROM user WHERE username = '%s'" % username

@@ -13,4 +13,5 @@ urlpatterns = [
     re_path(r"^top", views.top),
     path("ajax/timerstart", views.timer_start),
     path("ajax/timerend", views.timer_end),
+    path("ajax/saver", views.search_content_saver),
 ]
