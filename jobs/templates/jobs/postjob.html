@@ -5,11 +5,19 @@
         <form method="POST">
             {% csrf_token %}
             <fieldset class="form-group">
-                <legend class="border-bottom mb-4">Job Details</legend>
+                <div class="text-center">
+                    <h1 class="h4 text-gray-900 mb-4" style="margin-top: 40px;">Job Details</h1>
+                  </div>
+                <hr>
+                <div style="width: 420px;">
                 {{ form|crispy }}
+                </div>
             </fieldset>
-            <div class="form-group">
-                <button class="btn btn-outline-info" type="submit">Post my job!</button>
+{#            <div class="form-group">#}
+{#                <button class="btn btn-outline-info" type="submit">Post my job!</button>#}
+{#            </div>#}
+             <div class="form-group">
+                <button class="btn btn-primary btn-user btn-block" type="submit" style="width:260px!important; height: 43px; border-radius: 27px; margin-left: 80px; font-size: small;"> Post My Job</button>
             </div>
         </form>
     </div>

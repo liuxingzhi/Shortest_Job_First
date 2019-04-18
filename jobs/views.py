@@ -43,7 +43,7 @@ def post_job(request):
                 j_form = JobPostForm()
             return render(request, 'jobs/postjob.html', {'form': j_form})
         else:
-            return redirect('jobsite-home')
+            return redirect('profile')
 
 @login_required
 def see_posted(request):
@@ -67,8 +67,8 @@ def see_posted(request):
                 query4 = "DELETE FROM job WHERE job_id = {0}".format(search_text)
                 print(query4)
                 cursor.execute(query4)
-                return render(request, 'jobs/userjob.html')
-            return render(request, 'jobs/userjob.html', {'results': result})
+                return render(request, 'jobs/job_list.html')
+            return render(request, 'jobs/job_list.html', {'results': result})
 
         else:
             #message
@@ -78,16 +78,9 @@ def see_posted(request):
 
 def home(request):
     context = {
-        'posts': Post.objects.all()
+        'jobs': Post.objects.all()
     }
     return render(request, 'jobs/home.html', context)
-
-
-class PostListView(ListView):
-    model = Post
-    template_name = 'jobs/job_list.html'
-    context_object_name = 'posts'
-    ordering = ['-date_posted']
 
 
 class PostDetailView(DetailView):
@@ -95,12 +88,30 @@ class PostDetailView(DetailView):
     template_name = 'jobs/job_detail.html'
 
 
-class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+class PostDeleteView(LoginRequiredMixin, DeleteView):
     model = Post
     success_url = '/'
 
-    def test_func(self):
-        post = self.get_object()
-        if self.request.user == post.author:
-            return True
-        return False
+    def delete(self, request, *args, **kwargs):
+        with connection.cursor() as cursor:
+            uid = get_uid(request.user.username)
+            self.object = self.get_object()
+            if self.object.author == self.request.user:
+                job_title = self.object.job_title
+                salary = self.object.salary
+                location = self.object.location
+                job_description = self.object.job_description
+                query = f"""DELETE FROM job WHERE job_title = '{job_title}' AND salary = '{salary}' AND location = '{location}' AND job_description = '{job_description}' AND headhunter_id = '{uid}' LIMIT 1"""
+                cursor.execute(query)
+                self.object.delete()
+            return redirect('profile')  # Also add id of Article
+
+
+def get_uid(username: str):
+    with connection.cursor() as cursor:
+        query = "SELECT user_id FROM user WHERE username = '%s'" % username
+        cursor.execute(query)
+        uid = cursor.fetchone()
+        str2 = "{0}".format(uid)
+        uid_str = str2[1:str2.__len__() - 2]
+        return uid_str

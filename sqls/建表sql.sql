@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS user
 CREATE TABLE IF NOT EXISTS jobseeker
 (
   user_id            INT          NOT NULL,
-  major              VARCHAR(100) NOT NULL,
+  major              VARCHAR(100),
   GPA                FLOAT CHECK (GPA >= 0 AND GPA <= 4),
   university         VARCHAR(100),
   graduation_date    int(11),
@@ -31,8 +31,8 @@ CREATE TABLE IF NOT EXISTS jobseeker
 CREATE TABLE IF NOT EXISTS headhunter
 (
   user_id              INT          NOT NULL,
-  synopsis             VARCHAR(500) NOT NULL,
-  occupation_direction VARCHAR(500) NOT NULL,
+  synopsis             VARCHAR(500),
+  occupation_direction VARCHAR(500),
   UNIQUE (user_id),
   FOREIGN KEY (user_id)
     REFERENCES user (user_id)
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS company_data_unclean
 -- Job (job_id, Company.company_name, job_title, location, salary, job_description, Headhunter.user_id);
 CREATE TABLE IF NOT EXISTS job
 (
-  job_id               BIGINT(11),
+  job_id               BIGINT(11) AUTO_INCREMENT,
   company_id           BIGINT(11),
   salary               VARCHAR(100),
   job_title            VARCHAR(100),
@@ -192,7 +192,8 @@ CREATE TABLE IF NOT EXISTS search_history
   job_title VARCHAR(100),
   company_name VARCHAR(100),
   industry VARCHAR(100),
-  location VARCHAR(100)
+  location VARCHAR(100),
+  counted INT DEFAULT 0
 );
 
 create table if not exists job_bag_of_words_repr
@@ -204,4 +205,12 @@ create table if not exists job_bag_of_words_repr
         REFERENCES job (job_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
+);
+
+create table if not exists sh_counter
+(
+    user_id      INT NOT NULL,
+    search_keyword varchar(50),
+    count int,
+    PRIMARY KEY (user_id, search_keyword)
 );
