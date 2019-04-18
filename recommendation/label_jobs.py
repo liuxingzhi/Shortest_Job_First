@@ -1,4 +1,4 @@
-from utils.justeson_extractor import get_all_terms_in_doc
+from utils.justeson_extractor import get_all_terms_in_doc, get_all_terms_in_doc_with_frequency
 from job_crawler.MySQLWrapper import MySQLWrapper
 import re
 from typing import Tuple, List, Generator
@@ -37,37 +37,29 @@ def init_job_bag_of_words_table():
         db.commit()
 
 
-def insert_one_bag_of_word_repr(job_id: int, job_title: str, terms_generator: Generator[str, None, None]):
+def insert_one_bag_of_word_repr_of_job(job_id: int, job_title: str, terms_generator: Generator[str, None, None]):
     term_frequency_repr = [f"{t}\t{c}" for t, c in terms_generator]
     term_list_str = "\n".join(term_frequency_repr)
-    print(term_list_str)
-    # with MySQLWrapper() as db:
-    #     sql = f"""insert into job_bag_of_words_repr(job_id, job_title, bag_of_words)
-    #     values(%s, %s ,%s) """
-    #     vals = (job_id, job_title, term_list_str)
-    #     try:
-    #         db.insert_one(sql, vals)
-    #     except IntegrityError as e:
-    #         pass
+    with MySQLWrapper() as db:
+        sql = f"""insert into job_bag_of_words_repr(job_id, job_title, bag_of_words) 
+        values(%s, %s ,%s) """
+        vals = (job_id, job_title, term_list_str)
+        try:
+            db.insert_one(sql, vals)
+        except IntegrityError as e:
+            pass
+
+
+def label_jobs(min_freq=1):
+    with MySQLWrapper() as db:
+        sql = "select j.job_id, j.job_title, j.job_description from job j"
+        result: Tuple[int, str, str] = db.query_all(sql)
+
+    for one_job in result:
+        job_id, job_title, description = one_job
+        terms = get_all_terms_in_doc_with_frequency(reg_exp, description, min_freq)
+        insert_one_bag_of_word_repr_of_job(job_id, job_title, terms)
 
 
 if __name__ == '__main__':
-    min_freq = 1
-    result: Tuple[int, str, str] = None
-    all_doc_list = []
-    with MySQLWrapper() as db:
-        sql = "select j.job_id, j.job_title, j.job_description from job j"
-        result = db.query_all(sql)
-        # print(result)
-
-    for index, one_job in enumerate(result):
-        job_id, job_title, description = one_job
-        all_doc_list.append(description)
-    all_doc = "\n".join(all_doc_list)
-    print(all_doc)
-    # for index, one_job in enumerate(result):
-    #     if index > 3:
-    #         break
-    #     job_id, job_title, description = one_job
-    #     terms = get_all_terms_in_doc(reg_exp, description, min_freq)
-    #     insert_one_bag_of_word_repr(job_id, job_title, terms)
+    label_jobs(min_freq=1)
