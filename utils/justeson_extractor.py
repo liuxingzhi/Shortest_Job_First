@@ -54,7 +54,7 @@ def get_all_terms_in_doc(reg_exp, doc, min_freq=2):
     term_cnt = Counter(terms)
     for term in term_cnt:
         if term_cnt[term] >= min_freq:
-            yield term
+            yield (term, term_cnt[term])
 
 
 if __name__ == '__main__':
@@ -66,7 +66,10 @@ if __name__ == '__main__':
         doc = file.read()
         doc = str(doc, "utf_8").encode('ascii', 'ignore').decode("ascii")
         terms = get_all_terms_in_doc(reg_exp, doc, min_freq)
-        out_file = open(out, 'w')
-        out_file.write("\n".join(list(terms)))
-        out_file.close()
-        file.close()
+        for t, c in terms:
+            print(t,c)
+        # out_file = open(out, 'w')
+        # terms_dict
+        # out_file.write("\n".join(list(terms)))
+        # out_file.close()
+        # file.close()

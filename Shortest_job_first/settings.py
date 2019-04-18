@@ -24,7 +24,7 @@ SECRET_KEY = 'l7^y*5c-mrtjfhdm(antr#m-28l36ngqfcj6&$ltf3y!t+5kr='
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'jobsite.apps.JobsiteConfig',
     'jobs.apps.JobsConfig',
     'users.apps.UsersConfig',
+    'recommendation.apps.RecommendationConfig',
     'crispy_forms',
 ]
 
@@ -58,7 +59,8 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(BASE_DIR, 'users', 'templates'),
                  os.path.join(BASE_DIR, 'jobsite', 'templates'),
-                 os.path.join(BASE_DIR, 'jobs', 'templates'),]
+                 os.path.join(BASE_DIR, 'jobs', 'templates'),
+                 os.path.join(BASE_DIR, 'recommendation', 'templates'),]
         ,
         'APP_DIRS': True,
         'OPTIONS': {
@@ -138,3 +140,10 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 LOGIN_REDIRECT_URL = 'jobsite-home'
 LOGIN_URL = 'login'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'team309host@gmail.com'
+EMAIL_HOST_PASSWORD = 'cs4112019'

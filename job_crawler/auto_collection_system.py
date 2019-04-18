@@ -13,7 +13,7 @@ from multiprocessing import Manager, Process
 
 logging_file_dir = "loggings"
 if not os.path.exists(logging_file_dir):
-    os.mkdir(logging_file_dir)
+    os.makedirs(logging_file_dir)
 
 
 def init_logging_database():

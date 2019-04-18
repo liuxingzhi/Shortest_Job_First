@@ -89,7 +89,7 @@
                             <input type="text" class="search-filed" placeholder="company name" name="company_name">
                             <input type="text" class="search-filed" placeholder="industry" name="industry">
                             <input type="text" class="search-field" placeholder="location" name="location">
-                            <button class="search-btnn" type="submit"> Search</button>
+                            <button class="search-btnn" onclick="search_content_saver()" type="submit"> Search</button>
                         </div>
                     </form>
                     <h3 class="section-subheading text-muted"></h3>
@@ -100,7 +100,8 @@
             <div class="row">
                 {% for record in data_list %}
                     <div class="col-md-4 col-sm-6 portfolio-item">
-                        <a class="portfolio-link" data-toggle="modal" href="#portfolioModal{{ record.job_id }}">
+                        <a class="portfolio-link" data-toggle="modal" onclick="timerstart({{ record.job_id }})"
+                           href="#portfolioModal{{ record.job_id }}">
                             <div class="portfolio-hover">
                                 <div class="portfolio-hover-content">
                                     <i class="fas fa-plus fa-3x"></i>
@@ -161,7 +162,7 @@
              aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <div class="close-modal" data-dismiss="modal">
+                    <div class="close-modal" onclick="timerend({{ record.job_id }})" data-dismiss="modal">
                         <div class="lr">
                             <div class="rl"></div>
                         </div>
@@ -197,7 +198,8 @@
                                         {% endautoescape %}
                                     </div>
 
-                                    <button class="btn btn-primary" data-dismiss="modal" type="button">
+                                    <button class="btn btn-primary" data-dismiss="modal"
+                                            onclick="timerend({{ record.job_id }})" type="button">
                                         <i class="fas fa-times"></i>
                                         Close
                                     </button>
@@ -209,6 +211,96 @@
             </div>
         </div>
     {% endfor %}
+
+    <script>
+        let temp = "Initial";
+
+        function timerstart(job_id) {
+            let date = new Date();
+            let start = date.getTime();
+            temp = job_id;
+            $.ajax({
+                url: "/jobsite/ajax/timerstart",
+                type: "GET",
+                async: true,
+                dataType: "json",
+                data: {
+                    'start': start,
+                    'job_id': job_id
+                },
+                success: function (data) {
+                    alert("Successfully sent to Django");
+                }
+            });
+        }
+
+        function timerend(job_id) {
+            let date = new Date();
+            let end = date.getTime();
+            temp = "Initial";
+            $.ajax({
+                url: "/jobsite/ajax/timerend",
+                type: "GET",
+                async: true,
+                dataType: "json",
+                data: {
+                    'end': end,
+                    'job_id': job_id
+                },
+                success: function () {
+                    alert("Successfully sent to Django");
+                }
+            });
+        }
+
+        window.addEventListener('unload', function (event) {
+            console.log('Closed');
+            if (temp != "Initial") {
+                let date = new Date();
+                let end = date.getTime();
+                $.ajax({
+                    url: "/jobsite/ajax/timerend",
+                    type: "GET",
+                    async: true,
+                    dataType: "json",
+                    data: {
+                        'end': end,
+                        'job_id': temp
+                    },
+                    success: function () {
+                        alert("Successfully sent to Django");
+                    }
+                });
+            }
+        });
+
+
+        function search_content_saver() {
+            console.log("enter saver function");
+            let job_title = $("input[name='job_title']").val();
+            let company_name = $("input[name='company_name']").val();
+            let industry = $("input[name='industry']").val();
+            let location = $("input[name='location']").val();
+            let date = new Date();
+            let time = date.getTime();
+            $.ajax({
+                url: "/jobsite/ajax/saver",
+                type: 'GET',
+                async: true,
+                dataType: 'json',
+                data: {
+                        'time': time,
+                        'job_title': job_title,
+                        'company_name': company_name,
+                        'industry': industry,
+                        'location': location
+                    },
+                success: function () {
+                    alert("Successfully sent to Django");
+                }
+            });
+        }
+    </script>
 {% endblock %}
 
 {% block customer_js_links %}
