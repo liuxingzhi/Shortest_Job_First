@@ -1,9 +1,9 @@
 import sys
+# sys.path.append("..")
 import scipy.sparse
 from joblib import Memory
 from django.db import connection
 
-sys.path.append("..")
 from utils.justeson_extractor import get_all_terms_in_doc
 from job_crawler.MySQLWrapper import MySQLWrapper
 import re
@@ -75,10 +75,12 @@ get_doc_terms_KDtree = memory.cache(get_doc_terms_KDtree)
 def top_n_neighbors(n: int, query_list: List[str]) -> List[int]:
     # construct KDtree, time consuming
     neigh = get_doc_terms_KDtree()
-    combine2str = [",".join(query_list)]
-    query_bag_of_words_representation = vectorizer.transform(combine2str).todense()
-    distance, indices_list = neigh.kneighbors(query_bag_of_words_representation,n_neighbors=n)
 
+    combine2str = [",".join(query_list)]
+
+    query_bag_of_words_representation = vectorizer.transform(combine2str).todense()
+    distance, indices_list = neigh.kneighbors(query_bag_of_words_representation, n_neighbors=n)
+    print(distance)
     indices_list = indices_list.reshape(n)
 
     top_choices = []
@@ -87,13 +89,16 @@ def top_n_neighbors(n: int, query_list: List[str]) -> List[int]:
     return top_choices
 
 
-def manyjobs2job_n_closest_neighbors(job_list: Union[List[int], Tuple[int]], n: int):
+def manyjobs2job_n_closest_neighbors(job_list: Union[List[int], Tuple[int]], n: int) -> List[int]:
+    if len(job_list) == 0:
+        return []
     job_list = [str(x) for x in job_list]
     job_id_range_repr = "(" + ",".join(job_list) + ")"
     with MySQLWrapper() as db:
         sql = f"""select j.job_id, j.bag_of_words
                        from job_bag_of_words_repr j
                        where j.job_id in {job_id_range_repr}"""
+        print(sql)
         results: Tuple[Tuple[int, str]] = db.query_all(sql)
 
     total_query_list = []
@@ -109,7 +114,7 @@ def manyjobs2job_n_closest_neighbors(job_list: Union[List[int], Tuple[int]], n: 
     return closest_neighbors
 
 
-def job2job_n_closest_neighbors(job_id: int, n: int):
+def job2job_n_closest_neighbors(job_id: int, n: int) -> List[int]:
     with MySQLWrapper() as db:
         sql = f"""select j.job_id, j.bag_of_words
                     from job_bag_of_words_repr j
@@ -127,7 +132,7 @@ def job2job_n_closest_neighbors(job_id: int, n: int):
     return closest_neighbors
 
 
-def jobseeker2job_n_closest_neighbors(user_id: int, n: int):
+def jobseeker2job_n_closest_neighbors(user_id: int, n: int) -> List[int]:
     with MySQLWrapper() as db:
         sql = f"""select j.user_id, u.bag_of_words
                        from jobseeker j
@@ -135,6 +140,8 @@ def jobseeker2job_n_closest_neighbors(user_id: int, n: int):
                        on u.user_id = j.user_id
                        WHERE j.user_id = '{user_id}'"""
         result: Tuple[int, str] = db.query_one(sql)
+    if result is None:
+        return []
     _, bag_of_words = result
     query_list_fre = bag_of_words.split("\n")
     query_list = []
@@ -165,7 +172,7 @@ def store_interest_job():
                 cursor.commit()
 
 
-#store recommend job based on user search history and browse time
+# store recommend job based on user search history and browse time
 def store_behavior_job():
     with MySQLWrapper() as cursor:
         query = "DELETE FROM behavior_job"
@@ -181,10 +188,9 @@ def store_behavior_job():
             similar_list = manyjobs2job_n_closest_neighbors(get_by_browse_time(20000, uid), 3)
             job_id_list.extend(similar_list)
             for job_id in job_id_list:
-                query2 = f"""INSERT INTO behavior_job (user_id, job_id) VALUES ('{uid}', '{job_id}')"""
+                query2 = f"""INSERT INTO behavior_job (user_id, job_id) VALUES ({uid}, {job_id})"""
                 cursor.execute(query2)
                 cursor.commit()
-
 
 
 # get a list of job (ids) where user stays for a long time
@@ -227,9 +233,10 @@ def shc_helper(col: str, uid: str) -> List[str]:
 
 
 if __name__ == '__main__':
-    init_doc_matrix()
-    save_doc_matrix()
+    # init_doc_matrix()
+    # save_doc_matrix()
     # save_doc_matrix()
     # job2job_n_closest_neighbors(972027802, 5)
     # manyjobs2job_n_closest_neighbors([972027802, 1342456246, 1011707680, 3108494370, 3157500847], 5)
     store_behavior_job()
+    store_interest_job()

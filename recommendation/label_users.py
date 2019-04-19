@@ -1,3 +1,5 @@
+import sys
+# sys.path.append("..")
 from utils.justeson_extractor import get_all_terms_in_doc, get_all_terms_in_doc_with_frequency
 from job_crawler.MySQLWrapper import MySQLWrapper
 import re
