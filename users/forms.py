@@ -35,7 +35,6 @@ class SeekerUpdateForm(forms.ModelForm):
         ('3', '2021'),
         ('4', '2022'),
     )
-    personal_summary = forms.CharField(max_length=1500, label='Personal Summary - Your job expectation & Your skills')
     major = forms.CharField(max_length=50, label='Major')
     GPA = forms.FloatField(max_value=4, min_value=0, label='Current GPA')
     university = forms.CharField(max_length=100, label='University')
@@ -44,7 +43,7 @@ class SeekerUpdateForm(forms.ModelForm):
 
     class Meta:
         model = Profile
-        fields = ['personal_summary', 'image', 'major', 'GPA', 'university', 'graduation', 'salary']
+        fields = ['image', 'major', 'GPA', 'university', 'graduation', 'salary']
         labels = {
             'image': 'Choose an image for your profile'
         }

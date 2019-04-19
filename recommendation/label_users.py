@@ -41,14 +41,12 @@ def label_jobseekers():
     init_user_bag_of_words_table()
     min_freq = 1
     with MySQLWrapper() as db:
-        sql = """select p.user_id, p.personal_summary
+        sql = """select j.user_id, j.personal_summary
                     from jobseeker as j
                              inner join user u
                                         on j.user_id = u.user_id
-                             inner join users_profile p
-                                        on j.user_id = p.user_id
-                    where p.personal_summary is not null
-                      and p.personal_summary <> 'none'"""
+                    where j.personal_summary is not null
+                      and j.personal_summary <> 'none'"""
         result: Tuple[int, str, str] = db.query_all(sql)
 
     for index, one_row in enumerate(result):

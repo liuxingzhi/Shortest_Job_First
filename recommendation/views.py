@@ -9,6 +9,7 @@ import smtplib
 from django.http.response import HttpResponse
 from datetime import datetime
 import datetime
+from . import similarity_calculation
 
 
 def send_email(request):
@@ -51,41 +52,7 @@ def send_email(request):
         return render(request, "jobsite/index.html")
 
 
-def search_history_counter(request):
-    with connection.cursor() as cursor:
-        uid = get_uid(request.user.username)
-        shc_wrapper("job_title", uid)
-        shc_wrapper("company_name", uid)
-        shc_wrapper("industry", uid)
-        shc_wrapper("location", uid)
-        query1 = f"""UPDATE search_history SET counted = 1 WHERE user_id = '{uid}'"""
-        cursor.execute(query1)
-        return render(request, "jobsite/index.html")
 
-
-def shc_wrapper(col: str, uid: str):
-    with connection.cursor() as cursor:
-        query1 = f"""SELECT {col}, COUNT({col}) as count FROM search_history WHERE user_id = '{uid}' AND {col} <> '' AND counted = 0 GROUP BY {col} ORDER BY count DESC;"""
-        cursor.execute(query1)
-        result = cursor.fetchall()
-        for row in result:
-            query2 = f"""INSERT INTO sh_counter (user_id, search_keyword, count) VALUES ('{uid}', '{row[0]}', '{row[1]}') ON DUPLICATE KEY UPDATE count=count+{row[1]}"""
-            cursor.execute(query2)
-
-
-#search history combinator, called when decide to recommend
-def search_history_combinator(uid: str):
-    with connection.cursor() as cursor:
-        query1 = f"""SELECT search_keyword, count FROM sh_counter WHERE user_id = '{uid}'"""
-        cursor.execute(query1)
-        result = cursor.fetchall()
-        to_return: str = ""
-        if not result:
-            return to_return
-        for row in result:
-            for i in range(0, row[1]):
-                to_return += (" " + row[0])
-        return to_return
 
 
 #send email logic
@@ -115,41 +82,13 @@ def email_sending_gate(request):
             if (thisdate - lastdate).days <= 1:
                 return HttpResponse('')
             else:
-                #if not enough personal summary, do not recommend
-                query2 = f"""SELECT personal_summary from jobseeker WHERE user_id = '{uid}'"""
-                cursor.execute(query2)
-                result2 = cursor.fetchone()
-                if not all(result2):
-                    return HttpResponse('')
-                else:
-                    #if not enough search history, do not recommend
-                    search_history = search_history_combinator(uid)
-                    if not search_history:
-                        return HttpResponse('')
-                    else:
-                        #recommend
-                        pass
+                #fetch from recommend job list
+                query2 = f"""SELECT job_id FROM interest_job WHERE user_id = '{uid}' AND recommended = 0 LIMIT 3"""
 
 
 
 #possible - personal summary parser/combinator logic
 
-#to be deleted
-def testing(request):
-    uid = get_uid(request.user.username)
-    result = get_by_browse_time(15000, uid)
-    print(result)
-    return render(request, "jobsite/index.html")
-
-
-#use in query
-def get_by_browse_time(threshold: int, uid: str):
-    with connection.cursor() as cursor:
-        query1 = f"""SELECT job_title, company_name, industry, location FROM 
-        (((SELECT job_id, sum(time_elapsed) as total_time FROM browse_time WHERE user_id = '{uid}' 
-        GROUP BY job_id HAVING total_time >= {threshold}) as atable natural join job) natural join company)"""
-        cursor.execute(query1)
-        return cursor.fetchall()
 
 
 def get_uid(username: str):

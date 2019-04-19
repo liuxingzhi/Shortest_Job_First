@@ -23,7 +23,6 @@ class Profile(models.Model):
     university = models.CharField(default='none', max_length=100)
     graduation = models.CharField(default='1', choices=GRAD_CHOICES, max_length=1)
     salary = models.CharField(default='A', choices=SALARY_CHOICES, max_length=1)
-    personal_summary = models.CharField(default='none', max_length=1500)
     synopsis = models.CharField(default='none', max_length=2000)
     occupation = models.CharField(default='none', max_length=2000)
 
@@ -39,4 +38,3 @@ class Profile(models.Model):
             result_size = (350, 350)
             pic.thumbnail(result_size)
             pic.save(self.image.path)
-

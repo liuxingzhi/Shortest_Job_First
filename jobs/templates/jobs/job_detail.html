@@ -3,15 +3,20 @@
   <article class="media content-section">
     <div class="media-body">
       <div class="article-metadata">
-        <small class="text-muted">{{ object.date_posted|date:"F d, Y" }}</small>
-          <div>
+
+      </div>
+          <div class="text-center">
+                    <h1 class="h4 text-gray-900 mb-4" style="font-size: 30px; margin-top: 50px;">Job Details</h1>
+                  </div>
+        <hr>
+      <h2 class="article-title" style="font-size: 20px;"> Job Title: {{ object.job_title }}</h2>
+      <p class="article-content">Salary: {{ object.salary }}</p>
+        <p class="article-content">Location: {{ object.location }}</p>
+        <p class="article-content">Description: {{ object.job_description }}</p>
+        <p class="text-muted"> Posted Date: {{ object.date_posted|date:"F d, Y" }}</p>
+         <div>
             <a class="btn btn-danger btn-sm mt-1 mb-1" href="{% url 'post-delete' object.id %}">Delete</a>
           </div>
-      </div>
-      <h2 class="article-title">{{ object.job_title }}</h2>
-      <p class="article-content">{{ object.salary }}</p>
-        <p class="article-content">{{ object.location }}</p>
-        <p class="article-content">{{ object.job_description }}</p>
     </div>
   </article>
 {% endblock content %}

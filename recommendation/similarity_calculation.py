@@ -1,6 +1,7 @@
 import sys
 import scipy.sparse
 from joblib import Memory
+from django.db import connection
 
 sys.path.append("..")
 from utils.justeson_extractor import get_all_terms_in_doc
@@ -128,10 +129,11 @@ def job2job_n_closest_neighbors(job_id: int, n: int):
 
 def jobseeker2job_n_closest_neighbors(user_id: int, n: int):
     with MySQLWrapper() as db:
-        sql = """select j.user_id, u.bag_of_words
+        sql = f"""select j.user_id, u.bag_of_words
                        from jobseeker j
                        inner join user_bag_of_words_repr u 
-                       on u.user_id = j.user_id"""
+                       on u.user_id = j.user_id
+                       WHERE j.user_id = '{user_id}'"""
         result: Tuple[int, str] = db.query_one(sql)
     _, bag_of_words = result
     query_list_fre = bag_of_words.split("\n")
@@ -145,7 +147,78 @@ def jobseeker2job_n_closest_neighbors(user_id: int, n: int):
     return closest_neighbors
 
 
+# store recommend job based on user interests
+def store_interest_job():
+    with connection.cursor() as cursor:
+        query = "DELETE FROM interest_job"
+        cursor.execute(query)
+        query1 = f"""SELECT user_id FROM jobseeker WHERE personal_summary IS NOT NULL"""
+        cursor.execute(query1)
+        result1 = cursor.fetchall()
+        for row in result1:
+            uid = row[0]
+            job_id_list = jobseeker2job_n_closest_neighbors(uid, 9)
+            for job_id in job_id_list:
+                query2 = f"""INSERT INTO interest_job (user_id, job_id) VALUES ('{uid}', '{job_id}')"""
+                cursor.execute(query2)
+
+
+#store recommend job based on user search history and browse time
+def store_behavior_job():
+    with connection.cursor() as cursor:
+        query = "DELETE FROM behavior_job"
+        cursor.execute(query)
+        query1 = f"""SELECT user_id FROM jobseeker WHERE personal_summary IS NOT NULL"""
+        cursor.execute(query1)
+        result1 = cursor.fetchall()
+        for row in result1:
+            uid = row[0]
+            behavior_job_list = get_list_by_history(uid)
+            job_id_list = top_n_neighbors(9, behavior_job_list)
+            job_id_list.extend(get_by_browse_time(20000, uid))
+            for job_id in job_id_list:
+                query2 = f"""INSERT INTO behavior_job (user_id, job_id) VALUES ('{uid}', '{job_id}')"""
+                cursor.execute(query2)
+
+
+
+# get a list of job (ids) where user stays for a long time
+def get_by_browse_time(threshold: int, uid: str) -> List[str]:
+    with connection.cursor() as cursor:
+        query1 = f"""SELECT job_id FROM 
+        (((SELECT job_id, sum(time_elapsed) as total_time FROM browse_time WHERE user_id = '{uid}' 
+        GROUP BY job_id HAVING total_time >= {threshold}) as atable natural join job) natural join company)"""
+        cursor.execute(query1)
+        return cursor.fetchall()
+
+
+# get a list from search history, pass to similarity function
+def get_list_by_history(uid: str) -> List[str]:
+    with connection.cursor() as cursor:
+        list1 = shc_helper("job_title", uid)
+        list2 = shc_helper("company_name", uid)
+        list3 = shc_helper("industry", uid)
+        list4 = shc_helper("location", uid)
+        list1.extend(list2)
+        list1.extend(list3)
+        list1.extend(list4)
+        return list1
+
+# a helper function
+def shc_helper(col: str, uid: str) -> List[str]:
+    with connection.cursor() as cursor:
+        to_return = []
+        query1 = f"""SELECT {col}, COUNT({col}) as count FROM search_history WHERE user_id = '{uid}' AND {col} <> '' AND counted = 0 GROUP BY {col} ORDER BY count DESC;"""
+        cursor.execute(query1)
+        result = cursor.fetchall()
+        for row in result:
+            for i in range(0, row[1]):
+                to_return.append(row[0])
+        return to_return
+
+
 if __name__ == '__main__':
     # save_doc_matrix()
     # job2job_n_closest_neighbors(972027802, 5)
-    manyjobs2job_n_closest_neighbors([972027802, 1342456246, 1011707680, 3108494370, 3157500847], 5)
+    # manyjobs2job_n_closest_neighbors([972027802, 1342456246, 1011707680, 3108494370, 3157500847], 5)
+    store_interest_job()

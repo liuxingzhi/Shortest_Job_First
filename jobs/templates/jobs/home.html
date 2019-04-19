@@ -1,6 +1,10 @@
 {% extends "jobs/job_base.html" %}
 {% block content %}
     {% if jobs|length > 0 %}
+           <div class="text-center">
+                    <h1 class="h4 text-gray-900 mb-4" style="margin-top: 40px;">My Posted Jobs</h1>
+                  </div>
+        <hr>
         {% for p in jobs %}
             <article class="media content-section">
               <div class="media-body">

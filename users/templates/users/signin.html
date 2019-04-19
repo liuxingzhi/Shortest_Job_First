@@ -9,7 +9,7 @@
                <div class="text-center">
                     <h1 class="h4 text-gray-900 mb-4">Welcome Back!</h1>
                   </div>
-                <div style="width: 500px!important; display: block; border-radius: 20px;">
+                <div style="width: 335px!important; display: block; border-radius: 20px;">
                 {{ form|crispy }}
                 </div>
             </fieldset>
@@ -17,8 +17,8 @@
             <div class="form-group">
                 <button class="btn btn-primary btn-user btn-block" style="width:260px!important; height: 43px; border-radius: 27px; margin-left: 30px; font-size: small;"> Login</button>
             </div>
-            <div class="text-center">
-                    <a class="small" href="{% url 'register' %}"> Create an Account! </a>
+            <div>
+                    <a class="small" href="{% url 'register' %}" style="margin-left:100px;"> Create an Account! </a>
                 </div>
         </form>
     </div>

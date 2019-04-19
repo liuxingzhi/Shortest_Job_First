@@ -193,8 +193,7 @@ CREATE TABLE IF NOT EXISTS search_history
   job_title VARCHAR(100),
   company_name VARCHAR(100),
   industry VARCHAR(100),
-  location VARCHAR(100),
-  counted INT DEFAULT 0
+  location VARCHAR(100)
 );
 
 create table if not exists job_bag_of_words_repr
@@ -208,10 +207,16 @@ create table if not exists job_bag_of_words_repr
         ON UPDATE CASCADE
 );
 
-create table if not exists sh_counter
+create table if not exists interest_job
 (
-    user_id      INT NOT NULL,
-    search_keyword varchar(50),
-    count int,
-    PRIMARY KEY (user_id, search_keyword)
-);
+  user_id     INT NOT NULL,
+  job_id      BIGINT(11),
+  recommended int DEFAULT 0
+)
+
+create table if not exists behavior_job
+(
+  user_id     INT NOT NULL,
+  job_id      BIGINT(11),
+  recommended int DEFAULT 0
+)

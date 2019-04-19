@@ -13,10 +13,10 @@ def register(request):
                 # form.save()
                 # username = form.cleaned_data.get('username')
                 email = form.cleaned_data.get('email')
+                password = form.cleaned_data['password1']
                 username = form.cleaned_data['username']
                 realname = form.cleaned_data['realname']
                 usertype = form.cleaned_data['usertype']
-                password = form.cleaned_data.get('password1')
 
                 query1 = """INSERT INTO user (email, username, realname, usertype) VALUES ('%s', '%s', '%s', '%s')""" % (
                     email, username, realname, usertype)
@@ -26,6 +26,7 @@ def register(request):
                 uid = cursor.fetchone()
 
                 str1 = "{0}".format(usertype)
+                print(str1)
                 if str1 == "0":
                     query3 = "INSERT INTO jobseeker (user_id) VALUES ('%s')" % uid
                     cursor.execute(query3)
@@ -45,7 +46,6 @@ def profile(request):
     with connection.cursor() as cursor:
         if request.method == 'POST':
             query = "SELECT usertype FROM user WHERE username = '%s'" % request.user.username
-            previous_name = request.user.username
             cursor.execute(query)
             usertype = cursor.fetchone()
             str1 = "{0}".format(usertype)
@@ -60,9 +60,7 @@ def profile(request):
                     username = u_form.cleaned_data.get('username')
                     email = u_form.cleaned_data.get('email')
                     query1 = "UPDATE user SET username = '%s', email = '%s' WHERE username = '%s'" % (
-                    username, email, previous_name)
-                    print(username)
-                    print(request.user.username)
+                    username, email, request.user.username)
                     cursor.execute(query1)
                     query2 = "SELECT user_id FROM user WHERE username = '%s'" % username
                     cursor.execute(query2)
@@ -75,10 +73,9 @@ def profile(request):
                     university = p_form.cleaned_data['university']
                     graduation = p_form.cleaned_data['graduation']
                     salary = p_form.cleaned_data['salary']
-                    personal_summary = p_form.cleaned_data['personal_summary']
                     query3 = "UPDATE jobseeker SET major = '%s', GPA = '%s', university = '%s', graduation_date = '%s'" \
-                             ", salary_expectation = '%s', personal_summary = '%s' WHERE user_id = %s" % (
-                             major, gpa, university, graduation, salary, personal_summary, uid_str)
+                             ", salary_expectation = '%s' WHERE user_id = %s" % (
+                             major, gpa, university, graduation, salary, uid_str)
                     cursor.execute(query3)
 
                     u_form.save()
@@ -95,7 +92,7 @@ def profile(request):
                     username = u_form.cleaned_data.get('username')
                     email = u_form.cleaned_data.get('email')
                     query1 = "UPDATE user SET username = '%s', email = '%s' WHERE username = '%s'" % (
-                        username, email, previous_name)
+                        username, email, request.user.username)
                     cursor.execute(query1)
                     query2 = "SELECT user_id FROM user WHERE username = '%s'" % username
                     cursor.execute(query2)
