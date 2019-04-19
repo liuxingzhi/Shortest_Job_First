@@ -189,8 +189,8 @@ class MySQLWrapper:
             self._connection.close()
         # print("db resources has released.")
 
-    def execute(self, sql: str):
-        self.cursor.execute(sql)
+    def execute(self, sql: str, params=None):
+        self.cursor.execute(sql, params)
 
     def fetchall(self):
         return self.cursor.fetchall()

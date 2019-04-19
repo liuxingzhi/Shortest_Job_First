@@ -238,6 +238,7 @@
             let date = new Date();
             let end = date.getTime();
             temp = "Initial";
+            email_toggle();
             $.ajax({
                 url: "/jobsite/ajax/timerend",
                 type: "GET",
@@ -303,8 +304,9 @@
 
 
         function email_toggle() {
+            console.log("entered view email gate")
             $.ajax({
-                url: "/Shortest_job_first/ajax/emailtoggle",
+                url: "/ajax/emailtoggle",
                 type: 'GET',
                 async: true,
                 dataType: 'json',

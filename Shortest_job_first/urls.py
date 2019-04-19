@@ -38,7 +38,7 @@ urlpatterns = [
     path('ajax/emailtoggle', reco_views.email_sending_gate, name='email-gate'),
 
     path('testemail/', reco_views.send_email, name='send-mail'),
-    # path('testbt/', reco_views.testing, name='btt'),
+    path('testgate/', reco_views.email_sending_gate, name='gate'),
     # path('testshc/', reco_views.search_history_combinator, name='shc'),
 ]
 

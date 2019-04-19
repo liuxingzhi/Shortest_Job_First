@@ -19,7 +19,7 @@ def homeproc(request):
 
 
 def career(request):
-    return render(request, "jobsite/career.html")
+    return render(request, "jobsite/career_demo.html")
 
 
 def tips(request):

@@ -10,49 +10,46 @@ from django.http.response import HttpResponse
 from datetime import datetime
 import datetime
 from . import similarity_calculation
+from typing import List, Dict
 
 
-def send_email(request):
+def send_email(uid: str, job_list: List[Dict]):
     with connection.cursor() as cursor:
         plaintext = get_template('email_template.txt')
         htmltext = get_template('email_template.html')
         print(type(htmltext))
         print(htmltext)
 
-
-        query1 = "SELECT job_description_html FROM job LIMIT 5, 1"
+        query1 = f"""SELECT username, email FROM user WHERE user_id = '{uid}'"""
         cursor.execute(query1)
-        raw = cursor.fetchall()
-        str1 = "{0}".format(raw)
-        str2 = str1[3:str1.__len__() - 5]
-        str_to_pass = str2.replace(r"\n", '')
+        row = cursor.fetchone()
+        username: str = row[0]
 
-        dict_to_pass = {'username': request.user.username,
-                        'html_text': str_to_pass}
-
-        subject, from_email, to = f"""{request.user.username} - Thank you for dropping by!""", settings.EMAIL_HOST_USER, 'team309host@gmail.com'
+        dict_to_pass = {'username': username,
+                        'job1': job_list[0],
+                        'job2': job_list[1],
+                        'job3': job_list[2],
+                        'job4': job_list[3],
+                        'job5': job_list[4],
+                        'job6': job_list[5],}
         text_content = plaintext.render(dict_to_pass)
         html_content = htmltext.render(dict_to_pass)
-        # msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
-        # msg.attach_alternative(html_content, "text/html")
+
         server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
 
         # Authentication
         server.login("team309host@gmail.com", "cs4112019")
         msg = MIMEMultipart('alternative')
-        msg['Subject'] = f"""{request.user.username}- Thank you for dropping by!"""
+        msg['Subject'] = f"""{username}- Thank you for dropping by!"""
         msg['From'] = settings.EMAIL_HOST_USER
-        msg['To'] = 'jeff_illini_2017@outlook.com'
+        msg['To'] = row[1]
+
         message1 = MIMEText(text_content, 'plain')
         message2 = MIMEText(html_content, 'html')
         msg.attach(message1)
         msg.attach(message2)
         server.send_message(msg)
         server.quit()
-        return render(request, "jobsite/index.html")
-
-
-
 
 
 #send email logic
@@ -64,6 +61,7 @@ def email_sending_gate(request):
         str1 = "{0}".format(usertype)
         type_str = str1[1:str1.__len__() - 2]
         if type_str == "1":
+            print("exit1")
             return HttpResponse('')
         else:
             #if just recommended one day ago, do not recommend this time
@@ -75,15 +73,63 @@ def email_sending_gate(request):
             for row in result1:
                 last_recommend_time = row[0]
             if not last_recommend_time:
-                lastdate = datetime.strptime("2000-01-01", '%Y-%m-%d').date()
+                lastdate = datetime.datetime.strptime("2000-01-01", '%Y-%m-%d').date()
             else:
-                lastdate = datetime.strptime(last_recommend_time, '%Y-%m-%d').date()
+                lastdate = last_recommend_time
             thisdate = datetime.date.today()
             if (thisdate - lastdate).days <= 1:
+                print("exit2")
                 return HttpResponse('')
             else:
-                #fetch from recommend job list
-                query2 = f"""SELECT job_id FROM interest_job WHERE user_id = '{uid}' AND recommended = 0 LIMIT 3"""
+                print("exit3")
+                #check if enough for fetch
+                query6 = f"""SELECT count(*) FROM behavior_job WHERE user_id = '{uid}' AND recommended = 0"""
+                cursor.execute(query6)
+                row = cursor.fetchone()
+                if row[0] < 3:
+                    updatequery1 = f"""UPDATE behavior_job SET recommended = 0 WHERE user_id = '{uid}'"""
+                    cursor.execute(updatequery1)
+
+                query7 = f"""SELECT count(*) FROM interest_job WHERE user_id = '{uid}' AND recommended = 0"""
+                cursor.execute(query7)
+                row1 = cursor.fetchone()
+                if row1[0] < 3:
+                    updatequery2 = f"""UPDATE interest_job SET recommended = 0 WHERE user_id = '{uid}'"""
+                    cursor.execute(updatequery2)
+
+                #start fetching
+                query2 = f"""SELECT job_id, job_title, company_name, location, job_description FROM ((SELECT job_id FROM interest_job WHERE user_id = '{uid}' AND recommended = 0 LIMIT 3) as atable natural join job) inner join company on job.company_id = company.company_id LIMIT 3"""
+                cursor.execute(query2)
+                result2 = cursor.fetchall()
+                datalist = []
+                for row in result2:
+                    # pass to email template using dict
+                    one_row_dict = {'job_title': row[1],
+                                    'company_name': row[2],
+                                    'location': row[3],
+                                    'job_description': (row[4])[:500],}
+                    datalist.append(one_row_dict)
+                    query4 = f"""UPDATE interest_job SET recommended = 1 WHERE job_id = '{row[0]}'"""
+                    cursor.execute(query4)
+
+                query3 = f"""SELECT job_id, job_title, company_name, location, job_description FROM ((SELECT job_id FROM behavior_job WHERE user_id = '{uid}' AND recommended = 0 LIMIT 3) as atable natural join job) inner join company on job.company_id = company.company_id LIMIT 3"""
+                cursor.execute(query3)
+                result3 = cursor.fetchall()
+                for row in result3:
+                    one_row_dict = {'job_title': row[1],
+                                    'company_name': row[2],
+                                    'location': row[3],
+                                    'job_description': (row[4])[:500], }
+                    datalist.append(one_row_dict)
+                    query5 = f"""UPDATE behavior_job SET recommended = 1 WHERE job_id = '{row[0]}'"""
+                    cursor.execute(query5)
+
+                updatetime = f"""UPDATE jobseeker SET last_recommend_time = CURDATE() WHERE user_id = '{uid}'"""
+                cursor.execute(updatetime)
+
+                print(datalist)
+                send_email(uid, datalist)
+                return HttpResponse('')
 
 
 

@@ -1,0 +1,694 @@
+{% extends "jobsite/jobsite_base.html" %}
+{% load static %}
+
+{% block title %}career{% endblock %}
+
+{% block customer_style_links %}
+    <!-- Custom fonts for this template -->
+    <link href="{% static 'Career/vendor/fontawesome-free/css/all.css' %}" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Kaushan+Script' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic,700italic' rel='stylesheet'
+          type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Roboto+Slab:400,100,300,700' rel='stylesheet' type='text/css'>
+
+    <!-- Custom styles for this template -->
+    <link href="{% static 'Career/css/agency.css' %}" rel="stylesheet">
+{% endblock %}
+{% block in_page_additional_css %}
+    <style>
+        form div {
+            background: rgba(0, 0, 0, 0);
+            padding: 40px;
+        }
+
+        form input {
+            height: 50px;
+            padding: 10px;
+            border: none;
+            border-radius: 25px;
+            outline: none;
+            width: 210px;
+
+        }
+
+        form button {
+            height: 50px;
+            width: 150px;
+            background: #ffeb3b;
+            border: none;
+            color: #000;
+            border-radius: 25px;
+            font-weight: bold;
+            margin-top: 30px !important;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            background-image: url("https://source.unsplash.com/IgA-z5dRIoo") !important;
+            background-repeat: no-repeat;
+            background-attachment: scroll;
+            background-position: center center;
+            background-size: cover;
+        }
+
+        header div div div {
+            color: white;
+        }
+
+        h4 {
+            color: grey;
+        }
+
+    </style>
+
+{% endblock %}
+
+{% block customer_body_content %}
+    <header class="masthead">
+        <div class="container">
+            <div class="intro-text">
+                <div class="intro-lead-in"><strong>Your future starts here!</strong></div>
+                <a class="btn btn-primary btn-xl text-uppercase js-scroll-trigger" href="#portfolio">Let's Begin</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="bg-light" id="portfolio">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <h2 class="section-heading text-uppercase">Explore Companies</h2>
+                    <hr class="star-dark mb-5">
+
+                    <form action="{% url "job_search" %}" method="post">
+                        {% csrf_token %}
+                        <div class="form-boxx">
+                            <input type="text" class="search-filed" placeholder="job title" name="job_title">
+                            <input type="text" class="search-filed" placeholder="company name" name="company_name">
+                            <input type="text" class="search-filed" placeholder="industry" name="industry">
+                            <input type="text" class="search-field" placeholder="location" name="location">
+                            <button class="search-btnn" onclick="search_content_saver()" type="submit"> Search</button>
+                        </div>
+                    </form>
+                    <h3 class="section-subheading text-muted"></h3>
+                </div>
+            </div>
+
+
+            <div class="row">
+                {% for record in data_list %}
+                    <div class="col-md-4 col-sm-6 portfolio-item">
+                        <a class="portfolio-link" data-toggle="modal" onclick="timerstart({{ record.job_id }})"
+                           href="#portfolioModal{{ record.job_id }}">
+                            <div class="portfolio-hover">
+                                <div class="portfolio-hover-content">
+                                    <i class="fas fa-plus fa-3x"></i>
+                                </div>
+                            </div>
+                            <img class="img-fluid" src="{{ record.logo_url }}"
+                                 alt="">
+                            <div class="portfolio-caption">
+                                <h4>{{ record.job_title }}</h4>
+                                <p class="text-muted">{{ record.company_name }}</p>
+                                <p class="text-muted">{{ record.location }}</p>
+                            </div>
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </section>
+{#    Hard Coded six companies#}
+    <section class="bg-light" id="portfolio" style="margin-top: -350px;">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 col-sm-6 portfolio-item">
+                    <a class="portfolio-link" data-toggle="modal" href="#portfolioModal1">
+                        <div class="portfolio-hover">
+                            <div class="portfolio-hover-content">
+                                <i class="fas fa-plus fa-3x"></i>
+                            </div>
+                        </div>
+                        <img class="img-fluid" src="https://wallpapercave.com/wp/jLw8Rbf.jpg" alt="" style="height: 200px; width: 360px;">
+                    <div class="portfolio-caption">
+                        <h4>Software Developer</h4>
+                        <p class="text-muted">
+                            Apple
+                        </p>
+                        <p class="text-muted">
+                            Los Angelas, CA
+                        </p>
+                    </div>
+                    </a>
+
+                </div>
+                <div class="col-md-4 col-sm-6 portfolio-item">
+                    <a class="portfolio-link" data-toggle="modal" href="#portfolioModal2">
+                        <div class="portfolio-hover">
+                            <div class="portfolio-hover-content">
+                                <i class="fas fa-plus fa-3x"></i>
+                            </div>
+                        </div>
+                        <img class="img-fluid" src="https://wallpaperstream.com/wallpapers/full/brand-logo/Amazon-Brand-Logo-and-Black-Background.jpg" alt="">
+                    <div class="portfolio-caption">
+                        <h4>Data Analyst</h4>
+                        <p class="text-muted"> Amazon</p>
+                        <p class="text-muted"> Seattle, Washington</p>
+                    </div>
+                    </a>
+
+                </div>
+                <div class="col-md-4 col-sm-6 portfolio-item">
+                    <a class="portfolio-link" data-toggle="modal" href="#portfolioModal3">
+                        <div class="portfolio-hover">
+                            <div class="portfolio-hover-content">
+                                <i class="fas fa-plus fa-3x"></i>
+                            </div>
+                        </div>
+                        <img class="img-fluid" src="http://wallpapersdsc.net/wp-content/uploads/2015/10/Facebook_14.jpg" alt="">
+                    <div class="portfolio-caption">
+                        <h4>Web Developer</h4>
+                        <p class="text-muted">Facebook</p>
+                         <p class="text-muted">Menlo Park, CA</p>
+                    </div>
+                    </a>
+
+                </div>
+                <div class="col-md-4 col-sm-6 portfolio-item">
+                    <a class="portfolio-link" data-toggle="modal" href="#portfolioModal4">
+                        <div class="portfolio-hover">
+                            <div class="portfolio-hover-content">
+                                <i class="fas fa-plus fa-3x"></i>
+                            </div>
+                        </div>
+                        <img class="img-fluid" src="https://flipwallpapers.com/wallpapers/google-hd-wallpapers-For-desktop-Wallpaper.jpg" alt="">
+                     <div class="portfolio-caption">
+                        <h4>Scaled Sales Manager</h4>
+                        <p class="text-muted">Google</p>
+                         <p class="text-muted">Phoenix, AZ</p>
+                    </div>
+                    </a>
+
+                </div>
+                <div class="col-md-4 col-sm-6 portfolio-item">
+                    <a class="portfolio-link" data-toggle="modal" href="#portfolioModal5">
+                        <div class="portfolio-hover">
+                            <div class="portfolio-hover-content">
+                                <i class="fas fa-plus fa-3x"></i>
+                            </div>
+                        </div>
+                        <img class="img-fluid" src="https://wallup.net/wp-content/uploads/2017/11/22/379832-logo-brands-Dell-minimalism.jpg" alt="">
+                    <div class="portfolio-caption">
+                        <h4>Web Developer</h4>
+                        <p class="text-muted">Dell</p>
+                        <p class="text-muted">Chesterbrook, Pennsylvania</p>
+                    </div>
+                    </a>
+
+                </div>
+                <div class="col-md-4 col-sm-6 portfolio-item">
+                    <a class="portfolio-link" data-toggle="modal" href="#portfolioModal6">
+                        <div class="portfolio-hover">
+                            <div class="portfolio-hover-content">
+                                <i class="fas fa-plus fa-3x"></i>
+                            </div>
+                        </div>
+                        <img class="img-fluid" src="https://images4.alphacoders.com/588/thumb-1920-588108.png" alt="">
+                    <div class="portfolio-caption">
+                        <h4>Data Scientist</h4>
+                         <p class="text-muted">Samsung</p>
+                        <p class="text-muted">Seoul, South Korea</p>
+                    </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+{#    Hard Coded Companies above#}
+
+    <!-- About -->
+
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <span class="copyright">Copyright &copy; iJobs 2019</span>
+                </div>
+                <div class="col-md-4">
+                    <ul class="list-inline social-buttons">
+                        <li class="list-inline-item">
+                            <a href="https://twitter.com/">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="https://www.facebook.com/">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="https://www.linkedin.com/">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Portfolio Modals -->
+    <div class="portfolio-modal modal fade" id="portfolioModal1" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="close-modal" data-dismiss="modal">
+                    <div class="lr">
+                        <div class="rl"></div>
+                    </div>
+                </div>
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-8 mx-auto">
+                            <div class="modal-body">
+                                <!-- Project Details Go Here -->
+                                <img class="img-fluid d-block mx-auto"
+                                     src="https://wallpapercave.com/wp/jLw8Rbf.jpg" style="height: 270px; width: 400px;"
+                                     alt="">
+                                <h2 class="text-uppercase">Software Developer</h2>
+                                <p class="item-intro text-muted">
+                                    Location:Los Angelas, CA
+                                </p>
+                                <p class="item-intro text-muted">
+                                    Industry: IT
+                                </p>
+                                <p class="item-intro text-muted">
+                                    Company Name:Apple
+                                </p>
+
+                                <p>Apple Inc. is an American multinational technology company headquartered in Cupertino, California, that designs, develops, and sells consumer electronics, computer software, and online services. It is considered one of the Big Four of technology along with Amazon, Google, and Facebook.
+                                </p>
+<p>
+The company's hardware products include the iPhone smartphone, the iPad tablet computer, the Mac personal computer, the iPod portable media player, the Apple Watch smartwatch, the Apple TV digital media player, and the HomePod smart speaker. Apple's software includes the macOS and iOS operating systems, the iTunes media player, the Safari web browser, and the iLife and iWork creativity and productivity suites, as well as professional applications like Final Cut Pro, Logic Pro, and Xcode. Its online services include the iTunes Store, the iOS App Store, Mac App Store, Apple Music, Apple TV+, iMessage, and iCloud. Other services include Apple Store, Genius Bar, AppleCare, Apple Pay, Apple Pay Cash, and Apple Card.</p>
+{#                                <ul class="list-inline">#}
+{#                                    <li>Date: January 2017</li>#}
+{#                                    <li>Client: Threads</li>#}
+{#                                    <li>Category: Illustration</li>#}
+{#                                </ul>#}
+                                <button class="btn btn-primary" data-dismiss="modal" type="button">
+                                    <i class="fas fa-times"></i>
+                                    Close Project
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2 -->
+    <div class="portfolio-modal modal fade" id="portfolioModal2" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="close-modal" data-dismiss="modal">
+                    <div class="lr">
+                        <div class="rl"></div>
+                    </div>
+                </div>
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-8 mx-auto">
+                            <div class="modal-body">
+                                <!-- Project Details Go Here -->
+
+                                <img class="img-fluid d-block mx-auto"
+                                     src="https://wallpaperstream.com/wallpapers/full/brand-logo/Amazon-Brand-Logo-and-Black-Background.jpg" style="height: 270px; width: 400px;"
+                                     alt="">
+                                <h2 class="text-uppercase">Data Analyst</h2>
+                                <p class="item-intro text-muted">
+                                    Location:Seattle, Washington
+                                </p>
+                                <p class="item-intro text-muted">
+                                    Industry: IT
+                                </p>
+                                <p class="item-intro text-muted">
+                                    Company Name:Amazon
+                                </p>
+                                <p>Amazon is the largest e-commerce marketplace and cloud computing platform in the world as measured by revenue and market capitalization.Amazon.com was founded by Jeff Bezos on July 5, 1994, and started as an online bookstore but later diversified to sell video downloads/streaming, MP3 downloads/streaming, audiobook downloads/streaming, software, video games, electronics, apparel, furniture, food, toys, and jewelry. The company also owns a publishing arm, Amazon Publishing, a film and television studio, Amazon Studios, produces consumer electronics lines including Kindle e-readers, Fire tablets, Fire TV, and Echo devices, and is the world's largest provider of cloud infrastructure services (IaaS and PaaS) through its AWS subsidiary.Amazon has separate retail websites for some countries and also offers international shipping of some of its products to certain other countries.100 million people subscribe to Amazon Prime.</p>
+
+                                <button class="btn btn-primary" data-dismiss="modal" type="button">
+                                    <i class="fas fa-times"></i>
+                                    Close Project
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3 -->
+    <div class="portfolio-modal modal fade" id="portfolioModal3" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="close-modal" data-dismiss="modal">
+                    <div class="lr">
+                        <div class="rl"></div>
+                    </div>
+                </div>
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-8 mx-auto">
+                            <div class="modal-body">
+                                <!-- Project Details Go Here -->
+
+                                <img class="img-fluid d-block mx-auto"
+                                     src="http://wallpapersdsc.net/wp-content/uploads/2015/10/Facebook_14.jpg" style="height: 270px; width: 400px;"
+                                     alt="">
+                                <h2 class="text-uppercase">Software Developer</h2>
+                                <p class="item-intro text-muted">
+                                    Location:Menlok Park, CA
+                                </p>
+                                <p class="item-intro text-muted">
+                                    Industry: IT
+                                </p>
+                                <p class="item-intro text-muted">
+                                    Company Name:Facebook
+                                </p>
+                                <p>Facebook, Inc. is an American online social media and social networking service company. It is based in Menlo Park, California. It was founded by Mark Zuckerberg, along with fellow Harvard College students and roommates Eduardo Saverin, Andrew McCollum, Dustin Moskovitz and Chris Hughes. It is considered one of the Big Four technology companies along with Amazon, Apple, and Google.</p>
+
+                                <button class="btn btn-primary" data-dismiss="modal" type="button">
+                                    <i class="fas fa-times"></i>
+                                    Close Project
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 4 -->
+    <div class="portfolio-modal modal fade" id="portfolioModal4" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="close-modal" data-dismiss="modal">
+                    <div class="lr">
+                        <div class="rl"></div>
+                    </div>
+                </div>
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-8 mx-auto">
+                            <div class="modal-body">
+                                <!-- Project Details Go Here -->
+                                <img class="img-fluid d-block mx-auto"
+                                     src="https://flipwallpapers.com/wallpapers/google-hd-wallpapers-For-desktop-Wallpaper.jpg" style="height: 270px; width: 400px;"
+                                     alt="">
+                                <h2 class="text-uppercase">Scaled Sales Manager</h2>
+                                <p class="item-intro text-muted">
+                                    Location:Phoenix, AZ
+                                </p>
+                                <p class="item-intro text-muted">
+                                    Industry: IT
+                                </p>
+                                <p class="item-intro text-muted">
+                                    Company Name:Google
+                                </p>
+                                <p>Google LLC is an American multinational technology company that specializes in Internet-related services and products, which include online advertising technologies, search engine, cloud computing, software, and hardware. It is considered one of the Big Four technology companies, alongside Amazon, Apple and Facebook.</p>
+
+                                <button class="btn btn-primary" data-dismiss="modal" type="button">
+                                    <i class="fas fa-times"></i>
+                                    Close Project
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 5 -->
+    <div class="portfolio-modal modal fade" id="portfolioModal5" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="close-modal" data-dismiss="modal">
+                    <div class="lr">
+                        <div class="rl"></div>
+                    </div>
+                </div>
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-8 mx-auto">
+                            <div class="modal-body">
+                                <img class="img-fluid d-block mx-auto"
+                                     src="https://wallup.net/wp-content/uploads/2017/11/22/379832-logo-brands-Dell-minimalism.jpg" style="height: 270px; width: 400px;"
+                                     alt="">
+                                <h2 class="text-uppercase">Software Developer</h2>
+                                <p class="item-intro text-muted">
+                                    Location:ChesterBrook, Pennsylvania
+                                </p>
+                                <p class="item-intro text-muted">
+                                    Industry: IT
+                                </p>
+                                <p class="item-intro text-muted">
+                                    Company Name:Dell
+                                </p>
+                                <p>Dell is an American multinational computer technology company based in Round Rock, Texas, United States, that develops, sells, repairs, and supports computers and related products and services. Named after its founder, Michael Dell, the company is one of the largest technological corporations in the world, employing more than 145,000 people in the U.S. and around the world (Annual report 2018).</p>
+
+                                <button class="btn btn-primary" data-dismiss="modal" type="button">
+                                    <i class="fas fa-times"></i>
+                                    Close Project
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 6 -->
+    <div class="portfolio-modal modal fade" id="portfolioModal6" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="close-modal" data-dismiss="modal">
+                    <div class="lr">
+                        <div class="rl"></div>
+                    </div>
+                </div>
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-8 mx-auto">
+                            <div class="modal-body">
+                                <!-- Project Details Go Here -->
+
+                                <img class="img-fluid d-block mx-auto"
+                                     src="https://images4.alphacoders.com/588/thumb-1920-588108.png" style="height: 270px; width: 400px;"
+                                     alt="">
+                                <h2 class="text-uppercase">Software Developer</h2>
+                                <p class="item-intro text-muted">
+                                    Location:Seoul, South Korea
+                                </p>
+                                <p class="item-intro text-muted">
+                                    Industry: IT
+                                </p>
+                                <p class="item-intro text-muted">
+                                    Company Name:Samsung
+                                </p>
+                                <p>Samsung is a South Korean multinational conglomerate headquartered in Samsung Town, Seoul. It comprises numerous affiliated businesses, most of them united under the Samsung brand, and is the largest South Korean chaebol (business conglomerate).</p>
+
+                                <button class="btn btn-primary" data-dismiss="modal" type="button">
+                                    <i class="fas fa-times"></i>
+                                    Close Project
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- this is the inner page of job description,if clicked this will pop up -->
+    {% for record in data_list %}
+        <div class="portfolio-modal modal fade" id="portfolioModal{{ record.job_id }}" tabindex="-1" role="dialog"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="close-modal" onclick="timerend({{ record.job_id }})" data-dismiss="modal">
+                        <div class="lr">
+                            <div class="rl"></div>
+                        </div>
+                    </div>
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-8 mx-auto">
+                                <div class="modal-body">
+                                    <style>
+                                        img {
+                                            width: 350px !important;
+                                            height: 350px !important;
+
+                                        }
+                                    </style>
+                                    <img class="img-fluid d-block mx-auto" class="center"
+                                         src="{{ record.logo_url }}" alt="">
+                                    <style>
+                                        h2 {
+                                            font-size: 25pt !important;
+                                        }
+                                    </style>
+                                    <h2 class="text-uppercase">{{ record.job_title }}</h2>
+                                    <p class="item-intro text-muted"></p>
+                                    <ul class="list-inline">
+                                        <li>Company Name:&nbsp {{ record.company_name }}</li>
+                                        <li>Location: &nbsp {{ record.location }}</li>
+                                        <li>Industry: &nbsp {{ record.industry }}</li>
+                                    </ul>
+                                    <div style="text-align: left">
+                                        {% autoescape off %}
+                                            {{ record.job_description_html }}
+                                        {% endautoescape %}
+                                    </div>
+
+                                    <button class="btn btn-primary" data-dismiss="modal"
+                                            onclick="timerend({{ record.job_id }})" type="button">
+                                        <i class="fas fa-times"></i>
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    <script>
+        let temp = "Initial";
+
+        function timerstart(job_id) {
+            let date = new Date();
+            let start = date.getTime();
+            temp = job_id;
+            $.ajax({
+                url: "/jobsite/ajax/timerstart",
+                type: "GET",
+                async: true,
+                dataType: "json",
+                data: {
+                    'start': start,
+                    'job_id': job_id
+                },
+                success: function (data) {
+                    alert("Successfully sent to Django");
+                }
+            });
+        }
+
+        function timerend(job_id) {
+            let date = new Date();
+            let end = date.getTime();
+            temp = "Initial";
+            email_toggle()
+            $.ajax({
+                url: "/jobsite/ajax/timerend",
+                type: "GET",
+                async: true,
+                dataType: "json",
+                data: {
+                    'end': end,
+                    'job_id': job_id
+                },
+                success: function () {
+                    alert("Successfully sent to Django");
+                }
+            });
+        }
+
+        window.addEventListener('unload', function (event) {
+            console.log('Closed');
+            if (temp != "Initial") {
+                let date = new Date();
+                let end = date.getTime();
+                $.ajax({
+                    url: "/jobsite/ajax/timerend",
+                    type: "GET",
+                    async: true,
+                    dataType: "json",
+                    data: {
+                        'end': end,
+                        'job_id': temp
+                    },
+                    success: function () {
+                        alert("Successfully sent to Django");
+                    }
+                });
+            }
+        });
+
+
+        function search_content_saver() {
+            console.log("enter saver function");
+            let job_title = $("input[name='job_title']").val();
+            let company_name = $("input[name='company_name']").val();
+            let industry = $("input[name='industry']").val();
+            let location = $("input[name='location']").val();
+            let date = new Date();
+            let time = date.getTime();
+            $.ajax({
+                url: "/jobsite/ajax/saver",
+                type: 'GET',
+                async: true,
+                dataType: 'json',
+                data: {
+                        'time': time,
+                        'job_title': job_title,
+                        'company_name': company_name,
+                        'industry': industry,
+                        'location': location
+                    },
+                success: function () {
+                    alert("Successfully sent to Django");
+                }
+            });
+        }
+
+
+        function email_toggle() {
+            console.log("entered view email gate")
+            $.ajax({
+                url: "/ajax/emailtoggle",
+                type: 'GET',
+                async: true,
+                dataType: 'json',
+                success: function () {
+                    alert("Successfully sent to Django");
+                }
+            });
+        }
+    </script>
+{% endblock %}
+
+{% block customer_js_links %}
+    <!-- Plugin JavaScript -->
+    <script src="{% static 'Career/vendor/jquery-easing/jquery.easing.js' %}"></script>
+
+    <!-- Contact form JavaScript -->
+    <script src="{% static 'Career/js/jqBootstrapValidation.js' %}"></script>
+    <script src="{% static 'Career/js/contact_me.js' %}"></script>
+
+    <!-- Custom scripts for this template -->
+    <script src="{% static 'Career/js/agency.js' %}"></script>
+{% endblock %}
+

@@ -77,7 +77,7 @@ def top_n_neighbors(n: int, query_list: List[str]) -> List[int]:
     neigh = get_doc_terms_KDtree()
     combine2str = [",".join(query_list)]
     query_bag_of_words_representation = vectorizer.transform(combine2str).todense()
-    distance, indices_list = neigh.kneighbors(query_bag_of_words_representation)
+    distance, indices_list = neigh.kneighbors(query_bag_of_words_representation,n_neighbors=n)
 
     indices_list = indices_list.reshape(n)
 
@@ -149,9 +149,10 @@ def jobseeker2job_n_closest_neighbors(user_id: int, n: int):
 
 # store recommend job based on user interests
 def store_interest_job():
-    with connection.cursor() as cursor:
+    with MySQLWrapper() as cursor:
         query = "DELETE FROM interest_job"
         cursor.execute(query)
+        cursor.commit()
         query1 = f"""SELECT user_id FROM jobseeker WHERE personal_summary IS NOT NULL"""
         cursor.execute(query1)
         result1 = cursor.fetchall()
@@ -161,54 +162,62 @@ def store_interest_job():
             for job_id in job_id_list:
                 query2 = f"""INSERT INTO interest_job (user_id, job_id) VALUES ('{uid}', '{job_id}')"""
                 cursor.execute(query2)
+                cursor.commit()
 
 
 #store recommend job based on user search history and browse time
 def store_behavior_job():
-    with connection.cursor() as cursor:
+    with MySQLWrapper() as cursor:
         query = "DELETE FROM behavior_job"
         cursor.execute(query)
+        cursor.commit()
         query1 = f"""SELECT user_id FROM jobseeker WHERE personal_summary IS NOT NULL"""
         cursor.execute(query1)
         result1 = cursor.fetchall()
         for row in result1:
             uid = row[0]
             behavior_job_list = get_list_by_history(uid)
-            job_id_list = top_n_neighbors(9, behavior_job_list)
-            job_id_list.extend(get_by_browse_time(20000, uid))
+            job_id_list = top_n_neighbors(6, behavior_job_list)
+            similar_list = manyjobs2job_n_closest_neighbors(get_by_browse_time(20000, uid), 3)
+            job_id_list.extend(similar_list)
             for job_id in job_id_list:
                 query2 = f"""INSERT INTO behavior_job (user_id, job_id) VALUES ('{uid}', '{job_id}')"""
                 cursor.execute(query2)
+                cursor.commit()
 
 
 
 # get a list of job (ids) where user stays for a long time
-def get_by_browse_time(threshold: int, uid: str) -> List[str]:
-    with connection.cursor() as cursor:
+def get_by_browse_time(threshold: int, uid: str) -> List[int]:
+    with MySQLWrapper() as cursor:
         query1 = f"""SELECT job_id FROM 
         (((SELECT job_id, sum(time_elapsed) as total_time FROM browse_time WHERE user_id = '{uid}' 
         GROUP BY job_id HAVING total_time >= {threshold}) as atable natural join job) natural join company)"""
         cursor.execute(query1)
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        to_return = []
+        for row in result:
+            to_return.append(row[0])
+        return to_return
 
 
 # get a list from search history, pass to similarity function
 def get_list_by_history(uid: str) -> List[str]:
-    with connection.cursor() as cursor:
-        list1 = shc_helper("job_title", uid)
-        list2 = shc_helper("company_name", uid)
-        list3 = shc_helper("industry", uid)
-        list4 = shc_helper("location", uid)
-        list1.extend(list2)
-        list1.extend(list3)
-        list1.extend(list4)
-        return list1
+    list1 = shc_helper("job_title", uid)
+    list2 = shc_helper("company_name", uid)
+    list3 = shc_helper("industry", uid)
+    list4 = shc_helper("location", uid)
+    list1.extend(list2)
+    list1.extend(list3)
+    list1.extend(list4)
+    return list1
+
 
 # a helper function
 def shc_helper(col: str, uid: str) -> List[str]:
-    with connection.cursor() as cursor:
+    with MySQLWrapper() as cursor:
         to_return = []
-        query1 = f"""SELECT {col}, COUNT({col}) as count FROM search_history WHERE user_id = '{uid}' AND {col} <> '' AND counted = 0 GROUP BY {col} ORDER BY count DESC;"""
+        query1 = f"""SELECT {col}, COUNT({col}) as count FROM search_history WHERE user_id = '{uid}' AND {col} <> '' GROUP BY {col} ORDER BY count DESC;"""
         cursor.execute(query1)
         result = cursor.fetchall()
         for row in result:
@@ -218,7 +227,9 @@ def shc_helper(col: str, uid: str) -> List[str]:
 
 
 if __name__ == '__main__':
+    init_doc_matrix()
+    save_doc_matrix()
     # save_doc_matrix()
     # job2job_n_closest_neighbors(972027802, 5)
     # manyjobs2job_n_closest_neighbors([972027802, 1342456246, 1011707680, 3108494370, 3157500847], 5)
-    store_interest_job()
+    store_behavior_job()

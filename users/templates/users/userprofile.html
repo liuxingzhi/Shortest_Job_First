@@ -3,40 +3,51 @@
 {% load crispy_forms_tags %}
 {% block content %}
     <div class="content-section">
-      <form method="POST" enctype="multipart/form-data">
-          {% csrf_token %}
-          <fieldset class="form-group">
-              <div class="text-center">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <fieldset class="form-group">
+                <div class="text-center">
                     <h1 class="h4 text-gray-900 mb-4" style="margin-top: 40px;">Your Account</h1>
-                  </div>
-<hr>
-              <div class="media">
-        <img class="rounded-circle account-img" style="width: 70px; height: 70px;" src="{{ user.profile.image.url }}">
-        <div class="media-body">
-          <h2 class="account-heading" style="margin-left: 30px; font-size: 15px;margin-top: 10px;">UserName: {{ user.username }}</h2>
-          <p class="text-secondary" style="margin-left: 30px;font-size: 15px;">Email: {{ user.email }}</p>
-        </div>
-                  <div>
-
-                       <button class="btn btn-primary btn-user btn-block" formaction="{%  url 'job-post' %}" type="submit" style="height: 32px; margin-right: 15px;
-          width:120px!important; color:#FFFFFF !important; border-radius: 27px;  font-size:smaller;
-                          ">Post a Job</button>
-                       <button class="btn btn-primary btn-user btn-block" formaction="{%  url 'job-list' %}" type="submit" style="height: 32px; margin-right: 15px;
-          width:120px!important; color:#FFFFFF !important; border-radius: 27px;  font-size:smaller;
-                          ">Posted Jobs </button>
-                  </div>
-      </div>
-                <div style="width: 425px!important; display: block; border-radius: 20px;">
-              {{ u_form|crispy }}
-              {{ p_form|crispy }}
                 </div>
-          </fieldset>
-          <div class="form-group">
+                <hr>
+                <div class="media">
+                    <img class="rounded-circle account-img" style="width: 70px; height: 70px;"
+                         src="{{ user.profile.image.url }}">
+                    <div class="media-body">
+                        <h2 class="account-heading" style="margin-left: 30px; font-size: 15px;margin-top: 10px;">
+                            UserName: {{ user.username }}</h2>
+                        <p class="text-secondary" style="margin-left: 30px;font-size: 15px;">Email: {{ user.email }}</p>
+                    </div>
+                    {% if usertype.0 == 1 %}
+                        <div>
 
-{#              <a class="nav-link" href="{% url 'job-post' %}" style="margin-top: -30px;">Post a Job</a>#}
-{#       <a class="nav-link" href="{% url 'job-list' %}">My posted jobs</a>#}
-                <button type="submit" class="btn btn-primary btn-user btn-block" style="width:320px!important; color:#FFFFFF !important; height: 43px; border-radius: 27px; margin-left: 55px; font-size: small;"> Update</button>
+                            <button class="btn btn-primary btn-user btn-block" formaction="{% url 'job-post' %}"
+                                    type="submit" style="height: 32px; margin-right: 15px;
+          width:120px!important; color:#FFFFFF !important; border-radius: 27px;  font-size:smaller;
+                          ">Post a Job
+                            </button>
+                            <button class="btn btn-primary btn-user btn-block" formaction="{% url 'job-list' %}"
+                                    type="submit" style="height: 32px; margin-right: 15px;
+          width:120px!important; color:#FFFFFF !important; border-radius: 27px;  font-size:smaller;
+                          ">Posted Jobs
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+                <div style="width: 425px!important; display: block; border-radius: 20px;">
+                    {{ u_form|crispy }}
+                    {{ p_form|crispy }}
+                </div>
+            </fieldset>
+            <div class="form-group">
+
+                {#              <a class="nav-link" href="{% url 'job-post' %}" style="margin-top: -30px;">Post a Job</a>#}
+                {#       <a class="nav-link" href="{% url 'job-list' %}">My posted jobs</a>#}
+                <button type="submit" class="btn btn-primary btn-user btn-block"
+                        style="width:320px!important; color:#FFFFFF !important; height: 43px; border-radius: 27px; margin-left: 55px; font-size: small;">
+                    Update
+                </button>
             </div>
-      </form>
+        </form>
     </div>
 {% endblock content %}
