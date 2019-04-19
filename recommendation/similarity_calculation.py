@@ -6,7 +6,7 @@ sys.path.append("..")
 from utils.justeson_extractor import get_all_terms_in_doc
 from job_crawler.MySQLWrapper import MySQLWrapper
 import re
-from typing import Tuple, List, Generator, Union
+from typing import Tuple, List, Generator, Union, Optional
 from MySQLdb import OperationalError, IntegrityError
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.neighbors import NearestNeighbors
@@ -126,13 +126,15 @@ def job2job_n_closest_neighbors(job_id: int, n: int):
     return closest_neighbors
 
 
-def jobseeker2job_n_closest_neighbors(user_id: int, n: int):
+def jobseeker2job_n_closest_neighbors(user_id: int, n: int) -> Optional[List[int]]:
     with MySQLWrapper() as db:
-        sql = """select j.user_id, u.bag_of_words
+        sql = f"""select j.user_id, u.bag_of_words
                        from jobseeker j
                        inner join user_bag_of_words_repr u 
-                       on u.user_id = j.user_id"""
+                       on u.user_id = j.user_id
+                       where j.user_id = {user_id}"""
         result: Tuple[int, str] = db.query_one(sql)
+    print(result)
     _, bag_of_words = result
     query_list_fre = bag_of_words.split("\n")
     query_list = []
@@ -148,4 +150,5 @@ def jobseeker2job_n_closest_neighbors(user_id: int, n: int):
 if __name__ == '__main__':
     # save_doc_matrix()
     # job2job_n_closest_neighbors(972027802, 5)
-    manyjobs2job_n_closest_neighbors([972027802, 1342456246, 1011707680, 3108494370, 3157500847], 5)
+    # manyjobs2job_n_closest_neighbors([972027802, 1342456246, 1011707680, 3108494370, 3157500847], 5)
+    jobseeker2job_n_closest_neighbors(3,5)

@@ -3,7 +3,7 @@ from job_crawler.MySQLWrapper import MySQLWrapper
 import re
 from typing import Tuple, List, Generator
 from MySQLdb import OperationalError, IntegrityError
-
+import MySQLdb
 reg_exp = '((A|N)+|((A|N)*(NP)?)(A|N)*)N'
 p = re.compile(reg_exp)
 
@@ -14,6 +14,7 @@ def init_user_bag_of_words_table():
             (
                 user_id      int NOT NULL,
                 bag_of_words text,
+                CONSTRAINT user_unique UNIQUE (user_id),
                 FOREIGN KEY (user_id)
                     REFERENCES jobseeker (user_id)
                     ON DELETE CASCADE
@@ -34,12 +35,16 @@ def insert_one_bag_of_word_repr_of_user(user_id: int, terms_generator: Generator
         try:
             db.insert_one(sql, vals)
         except IntegrityError as e:
-            pass
+            sql = f"""update user_bag_of_words_repr as ubwr
+                    set ubwr.bag_of_words = %s
+                    where ubwr.user_id = %s"""
+            val = (term_list_str, user_id)
+            db.execute(sql, params=val)
+            db.commit()
 
 
-def label_jobseekers():
+def label_jobseekers(min_freq=1):
     init_user_bag_of_words_table()
-    min_freq = 1
     with MySQLWrapper() as db:
         sql = """select p.user_id, p.personal_summary
                     from jobseeker as j
