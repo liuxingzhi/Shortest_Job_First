@@ -1,5 +1,5 @@
 import sys
-# sys.path.append("..")
+sys.path.append("..")
 import scipy.sparse
 from joblib import Memory
 from django.db import connection
