@@ -300,6 +300,19 @@
                 }
             });
         }
+
+
+        function email_toggle() {
+            $.ajax({
+                url: "/Shortest_job_first/ajax/emailtoggle",
+                type: 'GET',
+                async: true,
+                dataType: 'json',
+                success: function () {
+                    alert("Successfully sent to Django");
+                }
+            });
+        }
     </script>
 {% endblock %}
 

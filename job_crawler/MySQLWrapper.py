@@ -187,7 +187,7 @@ class MySQLWrapper:
             self.cursor.close()
         if hasattr(self, '_conn'):
             self._connection.close()
-        print("db resources has released.")
+        # print("db resources has released.")
 
     def execute(self, sql: str):
         self.cursor.execute(sql)

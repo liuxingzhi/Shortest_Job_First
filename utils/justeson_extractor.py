@@ -9,7 +9,7 @@ p = re.compile(reg_exp)
 
 
 def interpret_tag(tag):
-    if tag.startswith("NN") and not(tag.endswith("S")):
+    if tag.startswith("NN") and not (tag.endswith("S")):
         return "N"
     if tag.startswith("JJ"):
         return "A"
@@ -25,11 +25,11 @@ def get_tag_string(tags):
 
 def get_all_terms_in_sent(reg_exp, sent):
     tokens = nltk.word_tokenize(sent)
-    #tags = nltk.pos_tag(tokens)
+    # tags = nltk.pos_tag(tokens)
     pretrain = PerceptronTagger()
     tags = pretrain.tag(tokens)
     tags = [[tag[0], tag[1]] for tag in tags]
-    if(not(tags[0][1].startswith("NNP"))):
+    if (not (tags[0][1].startswith("NNP"))):
         tags[0][0] = tags[0][0].lower()
     tag_string = "".join(get_tag_string(tags))
     p = re.compile(reg_exp)
@@ -55,6 +55,17 @@ def get_all_terms_in_doc(reg_exp, doc, min_freq=2):
     for term in term_cnt:
         if term_cnt[term] >= min_freq:
             yield term
+
+
+def get_all_terms_in_doc_with_frequency(reg_exp, doc, min_freq=2):
+    sents = nltk.sent_tokenize(doc)
+    terms = []
+    for sent in sents:
+        terms += get_all_terms_in_sent(reg_exp, sent)
+    term_cnt = Counter(terms)
+    for term in term_cnt:
+        if term_cnt[term] >= min_freq:
+            yield (term, term_cnt[term])
 
 
 if __name__ == '__main__':

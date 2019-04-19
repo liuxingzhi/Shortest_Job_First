@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS jobseeker
   graduation_date    int(11),
   salary_expectation VARCHAR(100),
   personal_summary   VARCHAR(1500),
+  last_recommend_time DATE,
   UNIQUE (user_id),
   FOREIGN KEY (user_id)
     REFERENCES user (user_id)

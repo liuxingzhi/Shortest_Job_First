@@ -35,7 +35,11 @@ urlpatterns = [
     path('joblist/', search_views.home, name='job-list'),
     path('job/<int:pk>/', search_views.PostDetailView.as_view(), name='job-detail'),
     path('job/<int:pk>/delete/', search_views.PostDeleteView.as_view(), name='post-delete'),
+    path('ajax/emailtoggle', reco_views.email_sending_gate, name='email-gate'),
+
     path('testemail/', reco_views.send_email, name='send-mail'),
+    path('testbt/', reco_views.testing, name='btt'),
+    path('testshc/', reco_views.search_history_combinator, name='shc'),
 ]
 
 if settings.DEBUG:

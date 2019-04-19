@@ -15,6 +15,7 @@ logging_file_dir = "loggings"
 if not os.path.exists(logging_file_dir):
     os.makedirs(logging_file_dir)
 
+
 def init_logging_database():
     with MySQLWrapper() as db:
         sql = """CREATE TABLE IF NOT EXISTS crawler_system_logging_table
@@ -56,9 +57,13 @@ def run_system():
     pro4.start()
     pro4.join()
 
-    print("should not come here")
-    logo_crawler_job_dispatcher(20)
-    clean_data()
+    # print("should not come here")
+    pro5 = Process(target=logo_crawler_job_dispatcher, args=(20,), daemon=False)
+    pro6 = Process(target=clean_data, daemon=False)
+    pro5.start()
+    pro6.start()
+    pro5.join()
+    pro6.join()
     record_end_status(run_id)
 
 

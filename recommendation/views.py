@@ -6,6 +6,9 @@ from django.template.loader import get_template
 from django.db import connection
 from Shortest_job_first import settings
 import smtplib
+from django.http.response import HttpResponse
+from datetime import datetime
+import datetime
 
 
 def send_email(request):
@@ -38,7 +41,7 @@ def send_email(request):
         msg = MIMEMultipart('alternative')
         msg['Subject'] = f"""{request.user.username}- Thank you for dropping by!"""
         msg['From'] = settings.EMAIL_HOST_USER
-        msg['To'] = 'team309host@gmail.com'
+        msg['To'] = 'jeff_illini_2017@outlook.com'
         message1 = MIMEText(text_content, 'plain')
         message2 = MIMEText(html_content, 'html')
         msg.attach(message1)
@@ -70,44 +73,83 @@ def shc_wrapper(col: str, uid: str):
             cursor.execute(query2)
 
 
-def weight_adder(job_str : str, uid: str):
+#search history combinator, called when decide to recommend
+def search_history_combinator(uid: str):
     with connection.cursor() as cursor:
         query1 = f"""SELECT search_keyword, count FROM sh_counter WHERE user_id = '{uid}'"""
         cursor.execute(query1)
         result = cursor.fetchall()
-        total_weight = 0
+        to_return: str = ""
+        if not result:
+            return to_return
         for row in result:
-            if row[0] in job_str:
-                total_weight += row[1]
-        return total_weight
+            for i in range(0, row[1]):
+                to_return += (" " + row[0])
+        return to_return
 
 
+#send email logic
+def email_sending_gate(request):
+    with connection.cursor() as cursor:
+        query = "SELECT usertype FROM user WHERE username = '%s'" % request.user.username
+        cursor.execute(query)
+        usertype = cursor.fetchone()
+        str1 = "{0}".format(usertype)
+        type_str = str1[1:str1.__len__() - 2]
+        if type_str == "1":
+            return HttpResponse('')
+        else:
+            #if just recommended one day ago, do not recommend this time
+            uid = get_uid(request.user.username)
+            query1 = f"""SELECT last_recommend_time FROM jobseeker WHERE user_id = '{uid}'"""
+            cursor.execute(query1)
+            result1 = cursor.fetchall()
+            last_recommend_time = ""
+            for row in result1:
+                last_recommend_time = row[0]
+            if not last_recommend_time:
+                lastdate = datetime.strptime("2000-01-01", '%Y-%m-%d').date()
+            else:
+                lastdate = datetime.strptime(last_recommend_time, '%Y-%m-%d').date()
+            thisdate = datetime.date.today()
+            if (thisdate - lastdate).days <= 1:
+                return HttpResponse('')
+            else:
+                #if not enough personal summary, do not recommend
+                query2 = f"""SELECT personal_summary from jobseeker WHERE user_id = '{uid}'"""
+                cursor.execute(query2)
+                result2 = cursor.fetchone()
+                if not all(result2):
+                    return HttpResponse('')
+                else:
+                    #if not enough search history, do not recommend
+                    search_history = search_history_combinator(uid)
+                    if not search_history:
+                        return HttpResponse('')
+                    else:
+                        #recommend
+                        pass
+
+
+
+#possible - personal summary parser/combinator logic
+
+#to be deleted
+def testing(request):
+    uid = get_uid(request.user.username)
+    result = get_by_browse_time(15000, uid)
+    print(result)
+    return render(request, "jobsite/index.html")
+
+
+#use in query
 def get_by_browse_time(threshold: int, uid: str):
     with connection.cursor() as cursor:
-        query1 = f"""SELECT job_title, company_name, industry, location FROM (((SELECT DISTINCT job_id FROM browse_time WHERE user_id = '{uid}' AND time_elapsed >= {threshold}) as atable natural join job) natural join company)"""
+        query1 = f"""SELECT job_title, company_name, industry, location FROM 
+        (((SELECT job_id, sum(time_elapsed) as total_time FROM browse_time WHERE user_id = '{uid}' 
+        GROUP BY job_id HAVING total_time >= {threshold}) as atable natural join job) natural join company)"""
         cursor.execute(query1)
         return cursor.fetchall()
-
-# def extract_search_history(request):
-#     with connection.cursor() as cursor:
-#         uid = get_uid(request.user.username)
-#         query1 = f"""SELECT DISTINCT job_title FROM search_history WHERE user_id = '{uid}'"""
-#         query2 = f"""SELECT DISTINCT company_name FROM search_history WHERE user_id = '{uid}'"""
-#         query3 = f"""SELECT DISTINCT industry FROM search_history WHERE user_id = '{uid}'"""
-#         query4 = f"""SELECT DISTINCT location FROM search_history WHERE user_id = '{uid}'"""
-#         result = esh_wrapper(query1) + esh_wrapper(query2) + esh_wrapper(query3) + esh_wrapper(query4)
-#         extract_personal_summary()
-#         print(result)
-#         return render(request, "jobsite/index.html")
-#
-#
-# def esh_wrapper(query: str):
-#     with connection.cursor() as cursor:
-#         cursor.execute(query)
-#         result1 = cursor.fetchall()
-#         str1 = "{0}".format(result1)
-#         to_append = str1.replace("(", "").replace(")", "").replace(",", " ").replace("'", "").replace("  ", " ")
-#         return to_append
 
 
 def get_uid(username: str):

@@ -30,7 +30,7 @@ from job_crawler.user_agents_crawler import get_a_useragent
 
 logging.basicConfig(level=logging.INFO, filename="glassdoor_crawling.log", filemode='w')
 
-glassdoor_main_url = "https://www.glassdoor.com/Job/jobs.htm?suggestCount=0&suggestChosen=false&clickSource=searchBtn&typedKeyword=software&sc.keyword=software&locT=&locId=&jobType="
+glassdoor_main_url = "https://www.glassdoor.com/Job/jobs.htm?suggestCount=0&suggestChosen=false&clickSource=searchBtn&typedKeyword=engineer&sc.keyword=engineer&locT=&locId=&jobType="
 time_limit = 10
 job_list_file = "job_list.txt"
 job_list = []
@@ -76,14 +76,14 @@ def get_browser(anonymous=False) -> selenium.webdriver:
     elif platform.system() == "Darwin":
         browser_driver_address = "chromedriver_2.45_mac"
     elif platform.system() == "Linux":
-        browser_driver_address = "chromedriver_2.36_ubuntu16.04"
+        browser_driver_address = "chromedriver73_linux64"
     else:
-        browser_driver_address = "chromedriver_2.36_ubuntu16.04"
+        browser_driver_address = "chromedriver73_linux64"
 
     driver_path = os.path.join(os.path.abspath("."), "browser_drivers", browser_driver_address)
 
     print("chrome_drive:", driver_path)
-    driver = webdriver.Chrome(driver_path, chrome_options=chrome_options)
+    driver = webdriver.Chrome(driver_path, options=chrome_options)
     return driver
 
 
@@ -113,6 +113,7 @@ def crawl_bunch_of_job(category_list: List[str], threadID: int) -> None:
 
 def crawl_one_job_title(job: str, driver: webdriver.Chrome) -> None:
     # go to the main page of glassdoor
+    print(job)
     driver.get(glassdoor_main_url)
     driver.implicitly_wait(time_limit)
     keyword = driver.find_element_by_id("sc.keyword")
@@ -370,11 +371,12 @@ def dispatch_job_categories(pool_size: int):
 
     for i in range(pool_size):
         processes[i].join()
+
     print("=====glassdoor crawler finished=====")
 
 
 if __name__ == '__main__':
-    dispatch_job_categories(1)
+    dispatch_job_categories(2)
     # job_list = fetch_uncrawled_job_categories()
     #
     # pool_size = 1

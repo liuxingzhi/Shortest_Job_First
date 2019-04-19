@@ -18,3 +18,4 @@ beautifulsoup4==4.6.3
 peewee==3.8.0
 lxml
 mysqlclient
+nltk

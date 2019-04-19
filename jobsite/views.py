@@ -73,7 +73,7 @@ def job_search(request):
             one_row_dict[description_tuple[0]] = value
         datalist.append(one_row_dict)
 
-    return render(request, "jobsite/career.html",  {"data_list": datalist})
+    return render(request, "jobsite/career.html", {"data_list": datalist})
 
 
 def job_info(request, job_id):
@@ -90,6 +90,7 @@ def add_favorite_job(request, job_id):
 
 def show_favorite_job(request, user_id):
     pass
+
 
 def timer_start(request):
     with connection.cursor() as cursor:
