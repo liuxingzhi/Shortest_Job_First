@@ -43,11 +43,11 @@ def register(request):
 @login_required
 def profile(request):
     with connection.cursor() as cursor:
+        query = "SELECT usertype FROM user WHERE username = '%s'" % request.user.username
+        previous_name = request.user.username
+        cursor.execute(query)
+        usertype = cursor.fetchone()
         if request.method == 'POST':
-            query = "SELECT usertype FROM user WHERE username = '%s'" % request.user.username
-            previous_name = request.user.username
-            cursor.execute(query)
-            usertype = cursor.fetchone()
             str1 = "{0}".format(usertype)
             type_str = str1[1:str1.__len__() - 2]
             if type_str == "0":
@@ -128,7 +128,8 @@ def profile(request):
 
         context = {
             'u_form': u_form,
-            'p_form': p_form
+            'p_form': p_form,
+            'usertype': usertype,
         }
 
     return render(request, 'users/userprofile.html', context)
