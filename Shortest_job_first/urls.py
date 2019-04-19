@@ -32,9 +32,9 @@ urlpatterns = [
     path("logout/", auth_views.LogoutView.as_view(template_name='users/signout.html'), name="logout"),
     path('profile/', user_views.profile, name='profile'),
     path('postjob/', search_views.post_job, name='job-post'),
-    path('post/', search_views.PostListView.as_view(), name='job-list'),
-    path('post/<int:pk>/', search_views.PostDetailView.as_view(), name='job-detail'),
-    path('post/<int:pk>/delete/', search_views.PostDeleteView.as_view(), name='post-delete'),
+    path('joblist/', search_views.home, name='job-list'),
+    path('job/<int:pk>/', search_views.PostDetailView.as_view(), name='job-detail'),
+    path('job/<int:pk>/delete/', search_views.PostDeleteView.as_view(), name='post-delete'),
     path('testemail/', reco_views.send_email, name='send-mail'),
 ]
 

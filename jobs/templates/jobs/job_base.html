@@ -1,15 +1,36 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core">
 <head>
-
+ <style>
+     .bg-post-image {
+         background: url("https://source.unsplash.com/K4mSJ7kc0As/480x670")!important;
+  background-position: center;
+  background-size: cover;
+     }
+ </style>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
 
+  <title>SB Admin 2 - Login</title>
+
+  <!-- Custom fonts for this template-->
+  <link href="{% static 'login/vendor/fontawesome-free/css/all.css' %}" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+  <!-- Custom styles for this template-->
+  <link href="{% static 'login/css/sb-admin-2.css' %}" rel="stylesheet">
     {% if job_title %}
         <title>Django Blog - {{ job_title }}</title>
     {% else %}
@@ -19,13 +40,60 @@
 <body>
     <header class="site-header">
     </header>
-    <main role="main" class="container">
-      <div class="row">
-        <div class="col-md-8">
-          {% block content %}{% endblock %}
+{#    <main role="main" class="container">#}
+{#      <div class="row">#}
+{#        <div class="col-md-8">#}
+{#          {% block content %}{% endblock %}#}
+{#        </div>#}
+{#      </div>#}
+{#    </main>#}
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="../">iJobs</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarResponsive">
+      <ul class="navbar-nav ml-auto">
+        <!-- <li class="nav-item">
+          <a class="nav-link" href="jobsite/register.html">Sign Up</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="login.html">Log In</a>
+        </li> -->
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<body class="bg-gradient-primary">
+
+  <div class="container">
+
+    <!-- Outer Row -->
+    <div class="row justify-content-center">
+
+      <div class="col-xl-10 col-lg-12 col-md-9">
+
+        <div class="card o-hidden border-0 shadow-lg my-5">
+          <div class="card-body p-0">
+            <!-- Nested Row within Card Body -->
+            <div class="row">
+              <div class="col-lg-6 d-none d-lg-block bg-post-image"></div>
+              <div class="col-lg-6">
+                  {% block content %}
+                  {% endblock content %}
+              </div>
+            </div>
+          </div>
         </div>
+
       </div>
-    </main>
+
+    </div>
+
+  </div>
+
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->

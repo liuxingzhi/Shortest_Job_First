@@ -9,6 +9,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.db import connection
 import django
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 
 
 # Create your views here.
@@ -41,6 +42,7 @@ def top(request):
     return render(request, "jobsite/top.html")
 
 
+@login_required
 def job_search(request):
     if request.method == "GET":
         return render(request, "jobsite/career.html")
@@ -122,6 +124,8 @@ def search_content_saver(request):
         company_name = request.GET.get('company_name')
         industry = request.GET.get('industry')
         location = request.GET.get('location')
+        if company_name == '' and job_title == '' and industry == '' and location == '':
+            return HttpResponse('')
         uid = get_uid(request.user.username)
         query = f"""insert into search_history (user_id, search_time, job_title, company_name, industry, location) values('{uid}', '{search_time}', '{job_title}', '{company_name}', '{industry}', '{location}') """
         cursor.execute(query)

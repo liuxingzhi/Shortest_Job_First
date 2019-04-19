@@ -6,17 +6,26 @@
         <form method="POST">
             {% csrf_token %}
             <fieldset class="form-group">
-                <legend class="border-bottom mb-4">Sign Up</legend>
-                {{ form|crispy }}
+{#                <legend class="border-bottom mb-4">Sign Up</legend>#}
+                <div class="text-center">
+                    <h1 class="h4 text-gray-900 mb-4" style="margin-top: 45px;">Create Your Account</h1>
+                  </div>
+                <div style="width: 600px!important; display: block; border-radius: 20px;">
+                    {{ form|crispy }}</div>
             </fieldset>
+        <hr>
             <div class="form-group">
-                <button class="btn btn-outline-info" type="submit">Sign Up</button>
+                <button class="btn btn-primary btn-user btn-block" type="submit" style="width:400px!important; height: 45px; border-radius: 27px; margin-left: 113px; font-size: s"> Sign Up</button>
             </div>
+            <div class="text-center">
+                    <a class="small" href="{% url 'login' %}"> Sign In My Account</a>
+                </div>
         </form>
-        <div class="border-top pt-3">
-            <small class="text-muted">
-                Already Have An Account? <a class="ml-2" href="{% url 'login' %}">Sign In</a>
-            </small>
-        </div>
+        <hr>
+{#        <div class="border-top pt-3">#}
+{#            <small class="text-muted">#}
+{#                Already Have An Account? <a class="ml-2" href="{% url 'login' %}">Sign In</a>#}
+{#            </small>#}
+{#        </div>#}
     </div>
 {% endblock content %}

@@ -52,7 +52,7 @@
                         <a class="nav-link" href="{% url 'profile' %}">Profile</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                        <a class="nav-link" onclick="email_toggle()" href="{% url 'logout' %}">Logout</a>
                     </li>
                 {% else %}
                     <li class="nav-item">
@@ -66,6 +66,33 @@
         </div>
     </div>
 </nav>
+<script>
+    function email_toggle() {
+            console.log("enter saver function");
+            let job_title = $("input[name='job_title']").val();
+            let company_name = $("input[name='company_name']").val();
+            let industry = $("input[name='industry']").val();
+            let location = $("input[name='location']").val();
+            let date = new Date();
+            let time = date.getTime();
+            $.ajax({
+                url: "/jobsite/ajax/saver",
+                type: 'GET',
+                async: true,
+                dataType: 'json',
+                data: {
+                        'time': time,
+                        'job_title': job_title,
+                        'company_name': company_name,
+                        'industry': industry,
+                        'location': location
+                    },
+                success: function () {
+                    alert("Successfully sent to Django");
+                }
+            });
+        }
+</script>
 {% block customer_body_content %}{% endblock %}
 
 <!-- Bootstrap core JavaScript -->
