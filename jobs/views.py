@@ -43,7 +43,7 @@ def post_job(request):
                 j_form = JobPostForm()
             return render(request, 'jobs/postjob.html', {'form': j_form})
         else:
-            return redirect('jobsite-home')
+            return redirect('profile')
 
 @login_required
 def see_posted(request):
@@ -96,13 +96,14 @@ class PostDeleteView(LoginRequiredMixin, DeleteView):
         with connection.cursor() as cursor:
             uid = get_uid(request.user.username)
             self.object = self.get_object()
-            job_title = self.object.job_title
-            salary = self.object.salary
-            location = self.object.location
-            job_description = self.object.job_description
-            query = f"""DELETE FROM job WHERE job_title = '{job_title}' AND salary = '{salary}' AND location = '{location}' AND job_description = '{job_description}' AND headhunter_id = '{uid}' LIMIT 1"""
-            cursor.execute(query)
-            self.object.delete()
+            if self.object.author == self.request.user:
+                job_title = self.object.job_title
+                salary = self.object.salary
+                location = self.object.location
+                job_description = self.object.job_description
+                query = f"""DELETE FROM job WHERE job_title = '{job_title}' AND salary = '{salary}' AND location = '{location}' AND job_description = '{job_description}' AND headhunter_id = '{uid}' LIMIT 1"""
+                cursor.execute(query)
+                self.object.delete()
             return redirect('profile')  # Also add id of Article
 
 
