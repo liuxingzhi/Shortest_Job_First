@@ -25,13 +25,9 @@ def send_email(uid: str, job_list: List[Dict]):
         row = cursor.fetchone()
         username: str = row[0]
 
-        dict_to_pass = {'username': username,
-                        'job1': job_list[0],
-                        'job2': job_list[1],
-                        'job3': job_list[2],
-                        'job4': job_list[3],
-                        'job5': job_list[4],
-                        'job6': job_list[5],}
+        dict_to_pass = {'username': username}
+        for i, job in enumerate(job_list[:6]):
+            dict_to_pass[f"job{str(i)}"] = job
         text_content = plaintext.render(dict_to_pass)
         html_content = htmltext.render(dict_to_pass)
 
@@ -52,7 +48,7 @@ def send_email(uid: str, job_list: List[Dict]):
         server.quit()
 
 
-#send email logic
+# send email logic
 def email_sending_gate(request):
     with connection.cursor() as cursor:
         query = "SELECT usertype FROM user WHERE username = '%s'" % request.user.username
@@ -64,12 +60,12 @@ def email_sending_gate(request):
             print("exit1")
             return HttpResponse('')
         else:
-            #if just recommended one day ago, do not recommend this time
+            # if just recommended one day ago, do not recommend this time
             uid = get_uid(request.user.username)
             query1 = f"""SELECT last_recommend_time FROM jobseeker WHERE user_id = '{uid}'"""
             cursor.execute(query1)
             result1 = cursor.fetchall()
-            last_recommend_time = ""
+            last_recommend_time: str
             for row in result1:
                 last_recommend_time = row[0]
             if not last_recommend_time:
@@ -82,7 +78,7 @@ def email_sending_gate(request):
                 return HttpResponse('')
             else:
                 print("exit3")
-                #check if enough for fetch
+                # check if enough for fetch
                 query6 = f"""SELECT count(*) FROM behavior_job WHERE user_id = '{uid}' AND recommended = 0"""
                 cursor.execute(query6)
                 row = cursor.fetchone()
@@ -97,7 +93,7 @@ def email_sending_gate(request):
                     updatequery2 = f"""UPDATE interest_job SET recommended = 0 WHERE user_id = '{uid}'"""
                     cursor.execute(updatequery2)
 
-                #start fetching
+                # start fetching
                 query2 = f"""SELECT job_id, job_title, company_name, location, job_description FROM ((SELECT job_id FROM interest_job WHERE user_id = '{uid}' AND recommended = 0 LIMIT 3) as atable natural join job) inner join company on job.company_id = company.company_id LIMIT 3"""
                 cursor.execute(query2)
                 result2 = cursor.fetchall()
@@ -107,7 +103,7 @@ def email_sending_gate(request):
                     one_row_dict = {'job_title': row[1],
                                     'company_name': row[2],
                                     'location': row[3],
-                                    'job_description': (row[4])[:500],}
+                                    'job_description': (row[4])[:500], }
                     datalist.append(one_row_dict)
                     query4 = f"""UPDATE interest_job SET recommended = 1 WHERE job_id = '{row[0]}'"""
                     cursor.execute(query4)
@@ -132,9 +128,7 @@ def email_sending_gate(request):
                 return HttpResponse('')
 
 
-
-#possible - personal summary parser/combinator logic
-
+# possible - personal summary parser/combinator logic
 
 
 def get_uid(username: str):

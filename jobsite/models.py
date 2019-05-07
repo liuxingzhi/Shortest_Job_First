@@ -115,6 +115,8 @@ class Jobseeker(models.Model):
     university = models.CharField(max_length=100, blank=True, null=True)
     graduation_date = models.DateField(blank=True, null=True)
     salary_expectation = models.FloatField(blank=True, null=True)
+    personal_summary = models.CharField(max_length=1500, blank=True, null=True)
+    last_recommend_time = models.DateField(blank=True, null=True)
 
     class Meta:
         managed = False

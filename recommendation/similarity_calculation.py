@@ -1,9 +1,9 @@
 import sys
+
 sys.path.append("..")
 import scipy.sparse
 from joblib import Memory
 from django.db import connection
-
 from utils.justeson_extractor import get_all_terms_in_doc
 from job_crawler.MySQLWrapper import MySQLWrapper
 import re
