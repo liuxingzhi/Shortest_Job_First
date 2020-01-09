@@ -116,26 +116,22 @@ and c.company_name like "%{company_name}%"and c.industry like "%{industry}%"
 order by j.job_id, j.location, c.industry, c.company_id asc
 limit {maximum_job_return}
 ```
-<span>2\. Count the frequency of a keyword in a job search</span>
 
-<span style="color: rgb(69,129,142);"><span style="color: rgb(69,129,142);"></span><span style="color: rgb(69,129,142);"></span><span style="color: rgb(69,129,142);"></span>INSERT INTO search_history (user_id, search_keyword, count)</span>
+2. Count the frequency of a keyword in a job search</span>
+```SQL
+INSERT INTO search_history (user_id, search_keyword, count)
+VALUES ('{uid}', '{row[0]}', '{row[1]}')
+ON DUPLICATE KEY UPDATE count = count + {row[1]}
+```
 
-<span style="color: rgb(69,129,142);"><span style="color: rgb(69,129,142);"></span><span style="color: rgb(69,129,142);"></span><span style="color: rgb(69,129,142);"></span>VALUES ('{uid}', '{row[0]}', '{row[1]}')</span>
-
-<span style="color: rgb(69,129,142);"><span style="color: rgb(69,129,142);"></span><span style="color: rgb(69,129,142);"></span><span style="color: rgb(69,129,142);"></span>ON DUPLICATE KEY UPDATE count = count + {row[1]}</span>
-
-<span>3\. Select jobs that are browsed for a long time</span>
-
-<span style="color: rgb(69,129,142);"><span style="color: rgb(69,129,142);"></span><span style="color: rgb(69,129,142);"></span><span style="color: rgb(69,129,142);"></span>SELECT job_id, job_title</span>
-
-<span style="color: rgb(69,129,142);"><span style="color: rgb(69,129,142);"></span><span style="color: rgb(69,129,142);"></span><span style="color: rgb(69,129,142);"></span>FROM (((SELECT job_id, sum(time_elapsed) as total_time</span>
-
-<span style="color: rgb(69,129,142);">FROM browse_time WHERE user_id = '{uid}'</span>
-
-<span style="color: rgb(69,129,142);">GROUP BY job_id</span>
-
-<span style="color: rgb(69,129,142);">HAVING total_time >= {threshold}) as atable natural join job) natural join company)</span>
-
+3. Select jobs that are browsed for a long time</span>
+```SQL
+SELECT job_id, job_title
+FROM (((SELECT job_id, sum(time_elapsed) as total_time
+FROM browse_time WHERE user_id = '{uid}'
+GROUP BY job_id
+HAVING total_time >= {threshold}) as atable natural join job) natural join company)
+```
 #### Simplified Dataflow
 
 <span style="color: rgb(0,0,0);"></span><span>A new user is able to create a new account with a username, password, email address and identity(job seeker or headhunter) and these information will be stored in our database. After creating the account, the user is able to sign in with username and password.</span>
