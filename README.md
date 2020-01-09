@@ -106,24 +106,16 @@ crawler_system_loggings (<u>crawl_id</u>, start_time, end_time, logging_file_pat
 
 #### SQL code snippet
 
-<span>1\. Search job</span>
-
-<span style="color: rgb(69,129,142);">select * from job as j</span>
-
-<span style="color: rgb(69,129,142);">inner join company as c on c.company_id = j.company_id</span>
-
-<span style="color: rgb(69,129,142);">where lower(j.job_title) like "%{job_title}%"</span>
-
-<span style="color: rgb(69,129,142);">and j.location like "%{location}%"</span>
-
-<span style="color: rgb(69,129,142);"><span style="color: rgb(69,129,142);"></span>and c.company_name like "%{company_name}%"</span>
-
-<span style="color: rgb(69,129,142);"><span style="color: rgb(69,129,142);"></span>and c.industry like "%{industry}%"</span>
-
-<span style="color: rgb(69,129,142);"><span style="color: rgb(69,129,142);"></span>order by j.job_id, j.location, c.industry, c.company_id asc</span>
-
-<span style="color: rgb(69,129,142);">limit {maximum_job_return}</span>
-
+1. Search job
+```SQL
+select * from job as j
+inner join company as c on c.company_id = j.company_id
+where lower(j.job_title) like "%{job_title}%"
+and j.location like "%{location}%"
+and c.company_name like "%{company_name}%"and c.industry like "%{industry}%"
+order by j.job_id, j.location, c.industry, c.company_id asc
+limit {maximum_job_return}
+```
 <span>2\. Count the frequency of a keyword in a job search</span>
 
 <span style="color: rgb(69,129,142);"><span style="color: rgb(69,129,142);"></span><span style="color: rgb(69,129,142);"></span><span style="color: rgb(69,129,142);"></span>INSERT INTO search_history (user_id, search_keyword, count)</span>
