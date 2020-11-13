@@ -1,0 +1,3 @@
+[submodule "job_crawler/ChromeDriverManager"]
+	path = job_crawler/ChromeDriverManager
+	url = https://github.com/liuxingzhi/ChromeDriverManager.git

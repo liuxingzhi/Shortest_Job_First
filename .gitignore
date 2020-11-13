@@ -1,3 +1,9 @@
+.browser_drivers
+.vscode
+loggings
+test.py
+tests.py
+
 # do not include any python package
 venv
 
