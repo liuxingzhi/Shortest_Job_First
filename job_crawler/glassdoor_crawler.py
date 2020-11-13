@@ -1,4 +1,5 @@
 import selenium
+
 from threading import Thread, Lock, Condition, Event
 from typing import List, Dict, Tuple, Sequence
 from selenium import webdriver
@@ -59,15 +60,15 @@ def fetch_uncrawled_job_categories() -> List[str]:
 
 def get_browser(anonymous=False) -> selenium.webdriver:
     chrome_options = Options()
-    proxy = get_a_proxy()
-    user_agent = get_a_useragent()
-    arg1 = '--proxy-server=%s' % proxy
-    arg2 = "--user-agent=%s" % user_agent
+    # proxy = get_a_proxy()
+    # user_agent = get_a_useragent()
+    # arg1 = '--proxy-server=%s' % proxy
+    # arg2 = "--user-agent=%s" % user_agent
     # print(arg1)
     # print(arg2)
-    if anonymous:
-        chrome_options.add_argument(arg1)
-        chrome_options.add_argument(arg2)
+    # if anonymous:
+    #     chrome_options.add_argument(arg1)
+    #     chrome_options.add_argument(arg2)
     # chrome_options.add_argument('--headless')  # 运行时关闭窗口
     # 使用同一目录下的chromedriver进行模拟
     browser_driver_address = str
@@ -76,10 +77,12 @@ def get_browser(anonymous=False) -> selenium.webdriver:
     elif platform.system() == "Darwin":
         browser_driver_address = "chromedriver_2.45_mac"
     elif platform.system() == "Linux":
-        browser_driver_address = "chromedriver73_linux64"
+        browser_driver_address = "chromedriver_2.36_ubuntu16.04"
     else:
-        browser_driver_address = "chromedriver73_linux64"
+        browser_driver_address = "chromedriver_2.36_ubuntu16.04"
 
+
+    driver_path = get_driver()
     driver_path = os.path.join(os.path.abspath("."), "browser_drivers", browser_driver_address)
 
     print("chrome_drive:", driver_path)
