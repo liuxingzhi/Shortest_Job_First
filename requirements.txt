@@ -3,7 +3,7 @@ attrs==19.1.0
 backcall==0.1.0
 beautifulsoup4==4.6.3
 bleach==3.1.0
-certifi==2018.11.29
+certifi==2022.12.7
 chardet==3.0.4
 configparser==3.7.3
 DBUtils==1.3
